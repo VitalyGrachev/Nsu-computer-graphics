@@ -11,12 +11,15 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Life
 TEMPLATE = app
 
+QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp \
     model/life_field.cpp \
     view/field_display.cpp \
-    view/main_window.cpp
+    view/main_window.cpp \
+    view/canvas.cpp
 
 HEADERS  += mainwindow.h \
     view/field_display.h \
-    view/main_window.h
+    view/main_window.h \
+    view/canvas.h
