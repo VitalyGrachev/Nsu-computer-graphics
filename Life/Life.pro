@@ -22,4 +22,5 @@ SOURCES += main.cpp \
 HEADERS  += mainwindow.h \
     view/field_display.h \
     view/main_window.h \
-    view/canvas.h
+    view/canvas.h \
+    model/life_field.h
