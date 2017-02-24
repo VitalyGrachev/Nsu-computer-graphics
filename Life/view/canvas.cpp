@@ -1,6 +1,7 @@
 #include "canvas.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 const int BITS_IN_BYTE = 8;
 
@@ -17,7 +18,7 @@ Canvas::Canvas(int width, int height)
       height(image.height()) {
 }
 
-void Canvas::draw_line_bresenham(int x1, int y1, int x2, int y2, QRgb color) {
+void Canvas::draw_line_bresenham_unsafe(int x1, int y1, int x2, int y2, QRgb color) {
     int deltaX = std::abs(x2 - x1);
     int deltaY = std::abs(y2 - y1);
     int error = 0;
@@ -59,18 +60,22 @@ void Canvas::draw_line_bresenham(int x1, int y1, int x2, int y2, QRgb color) {
 void Canvas::fill(QRgb color) {
     uchar * image_end = image_start + image.byteCount();
     for(uchar * line_start = image_start; line_start < image_end; line_start += bytes_per_line) {
-        QRgb * line_end = reinterpret_cast<QRgb*>(line_start + image_bytes_per_line);
-        for(QRgb * pixel = reinterpret_cast<QRgb*>(line_start); pixel < line_end; ++pixel) {
-            *pixel = color;
+//        QRgb * line_end = reinterpret_cast<QRgb*>(line_start + image_bytes_per_line);
+//        for(QRgb * pixel = reinterpret_cast<QRgb*>(line_start); pixel < line_end; ++pixel) {
+//            *pixel = color;
+//        }
+        QRgb * line = reinterpret_cast<QRgb*>(line_start);
+        for(int i = 0; i < width; ++i) {
+            line[i] = color;
         }
     }
 }
 
 void Canvas::draw_vertical_line(int x, int y1, int y2, QRgb color) {
-    if(y1 > y2) std::swap(y1, y2);
     if(x < 0 || x >= width) {
         return;
     }
+    if(y1 > y2) std::swap(y1, y2);
     y1 = std::max(0, y1);
     y2 = std::min(height-1, y2);
 
@@ -83,10 +88,10 @@ void Canvas::draw_vertical_line(int x, int y1, int y2, QRgb color) {
 }
 
 void Canvas::draw_horizontal_line(int x1, int x2, int y, QRgb color) {
-    if(x1 > x2) std::swap(x1, x2);
     if(y < 0 || y >= height) {
         return;
     }
+    if(x1 > x2) std::swap(x1, x2);
     x1 = std::max(0, x1);
     x2 = std::min(width-1, x2);
 
@@ -97,13 +102,12 @@ void Canvas::draw_horizontal_line(int x1, int x2, int y, QRgb color) {
     }
 }
 
-void Canvas::draw_line(const QPoint & p1, const QPoint & p2, QRgb color) {
-    if(p1.x() == p2.x()) {
-        draw_vertical_line(p1.x(), p1.y(), p2.y(), color);
-    } else if(p1.y() == p2.y()) {
-        draw_horizontal_line(p1.x(), p2.x(), p1.y(), color);
+void Canvas::draw_line(int x1, int y1, int x2, int y2, QRgb color) {
+    if(x1 == x2) {
+        draw_vertical_line(x1, y1, y2, color);
+    } else if(y1 == y2) {
+        draw_horizontal_line(x1, x2, y1, color);
     } else {
-        draw_line_bresenham(p1.x(), p1.y(), p2.x(), p2.y(), color);
+        draw_line_bresenham_unsafe(x1, y1, x2, y2, color);
     }
-
 }

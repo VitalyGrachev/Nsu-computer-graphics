@@ -17,10 +17,12 @@ SOURCES += main.cpp \
     model/life_field.cpp \
     view/field_display.cpp \
     view/main_window.cpp \
-    view/canvas.cpp
+    view/canvas.cpp \
+    view/hex_grid_canvas.cpp
 
 HEADERS  += mainwindow.h \
     view/field_display.h \
     view/main_window.h \
     view/canvas.h \
-    model/life_field.h
+    model/life_field.h \
+    view/hex_grid_canvas.h

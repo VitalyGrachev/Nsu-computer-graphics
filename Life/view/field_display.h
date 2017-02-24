@@ -2,7 +2,7 @@
 #define FIELD_DISPLAY_H
 
 #include <QWidget>
-#include "canvas.h"
+#include "hex_grid_canvas.h"
 
 class FieldDisplay : public QWidget
 {
@@ -11,10 +11,9 @@ public:
     ~FieldDisplay();
 protected:
     void paintEvent(QPaintEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
 
 private:
-    Canvas * canvas;
+    HexGridCanvas * canvas;
 };
 
 #endif // FIELD_DISPLAY_H
