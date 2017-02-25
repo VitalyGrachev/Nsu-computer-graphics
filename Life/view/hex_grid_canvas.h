@@ -24,8 +24,8 @@ private:
 };
 
 inline QPoint HexGridCanvas::hex_position(int col, int row) const {
-    int xx = ((row % 2) + 2 * col) * cell_half_width;
-    int yy = (3 * row) * cell_quarter_height;
+    int xx = ((row % 2) + 2 * row) * cell_half_width;
+    int yy = (3 * col) * cell_quarter_height;
     return QPoint(xx, yy);
 }
 

@@ -14,15 +14,16 @@ TEMPLATE = app
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp \
-    model/life_field.cpp \
     view/field_display.cpp \
     view/main_window.cpp \
     view/canvas.cpp \
-    view/hex_grid_canvas.cpp
+    view/hex_grid_canvas.cpp \
+    model/life_game_engine.cc
 
 HEADERS  += mainwindow.h \
     view/field_display.h \
     view/main_window.h \
     view/canvas.h \
     model/life_field.h \
-    view/hex_grid_canvas.h
+    view/hex_grid_canvas.h \
+    model/life_game_engine.h

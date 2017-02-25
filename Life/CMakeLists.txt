@@ -4,7 +4,6 @@ project(Life)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES
-    model/life_field.cpp
     model/life_field.h
     view/canvas.cpp
     view/canvas.h
@@ -14,7 +13,9 @@ set(SOURCE_FILES
     view/hex_grid_canvas.h
     view/main_window.cpp
     view/main_window.h
-    main.cpp)
+    main.cpp 
+    model/life_game_engine.cc 
+    model/life_game_engine.h)
 
 find_package(Qt5Widgets REQUIRED)
 
