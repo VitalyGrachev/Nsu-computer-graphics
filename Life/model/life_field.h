@@ -15,13 +15,9 @@ public:
 
     LifeField(const LifeField &) = default;
 
-    LifeField(const LifeField &&) = default;
-
     ~LifeField() = default;
 
     LifeField & operator=(const LifeField &) = default;
-
-    LifeField & operator=(const LifeField &&) = default;
 
     const Row & operator[](int row) const;
 

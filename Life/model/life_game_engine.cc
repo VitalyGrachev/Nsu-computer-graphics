@@ -1,6 +1,6 @@
 #include "life_game_engine.h"
 
-using LifeField::CellState;
+using CellState = LifeField::CellState;
 
 LifeGameEngine::Parameters::Parameters(double first_impact,
                                        double second_impact,
@@ -16,16 +16,26 @@ LifeGameEngine::Parameters::Parameters(double first_impact,
           live_end(live_end) {
 }
 
+bool LifeGameEngine::Parameters::gonna_stay_alive(int first_count, int second_count) const {
+    double impact = first_impact * first_count + second_impact * second_count;
+    return (impact >= live_begin) && (impact <= live_end);
+}
+
+bool LifeGameEngine::Parameters::gonna_be_born(int first_count, int second_count) const {
+    double impact = first_impact * first_count + second_impact * second_count;
+    return (impact >= birth_begin) && (impact <= birth_end);
+}
+
 LifeGameEngine::LifeGameEngine(uint32_t cols,
                                uint32_t rows,
                                const Parameters & parameters,
-                               const ChangeNotifier & notifier)
+                               std::unique_ptr<ChangeNotifier> notifier)
         : field1(cols, rows),
           field2(field1),
           parameters(parameters),
           current_field(&field1),
           next_field(&field2),
-          notifier(notifier) {
+          notifier(std::move(notifier)) {
 }
 
 int LifeGameEngine::first_rank_neighbor_count(uint32_t col, uint32_t row) const {
@@ -117,5 +127,5 @@ void LifeGameEngine::tick() {
         }
     }
     std::swap(current_field, next_field);
-    notifier.notify();
+    notifier->notify();
 }

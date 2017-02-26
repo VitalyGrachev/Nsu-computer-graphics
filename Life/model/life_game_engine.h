@@ -2,6 +2,7 @@
 #define LIFE_GAME_ENGINE_H
 
 #include <cstdint>
+#include <memory>
 #include "life_field.h"
 
 class LifeGameEngine {
@@ -84,13 +85,15 @@ public:
 
     class ChangeNotifier {
     public:
+        ChangeNotifier() {}
+        virtual ~ChangeNotifier() {}
         virtual void notify() const = 0;
     };
 
     LifeGameEngine(uint32_t cols,
                    uint32_t rows,
                    const Parameters & parameters,
-                   const ChangeNotifier & notifier);
+                   std::unique_ptr<ChangeNotifier> notifier);
 
     void tick();
 
@@ -104,7 +107,7 @@ private:
     LifeField field1;
     LifeField field2;
     Parameters parameters;
-    ChangeNotifier notifier;
+    std::unique_ptr<ChangeNotifier> notifier;
 };
 
 

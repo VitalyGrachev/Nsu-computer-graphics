@@ -19,23 +19,23 @@ Canvas::Canvas(int width, int height)
 }
 
 void Canvas::draw_line_bresenham_unsafe(int x1, int y1, int x2, int y2, QRgb color) {
-    int deltaX = std::abs(x2 - x1);
-    int deltaY = std::abs(y2 - y1);
+    int delta_x = std::abs(x2 - x1);
+    int delta_y = std::abs(y2 - y1);
     int error = 0;
-    if(deltaY > deltaX) {
+    if(delta_y > delta_x) {
         if(y1 > y2) {
             std::swap(x1, x2);
             std::swap(y1, y2);
         }
         int sign = (x1 > x2 ? -1 : 1);
-        int deltaErr = deltaX;
+        int delta_err = delta_x;
         int x = x1;
         for(int y = y1; y <= y2; ++y) {
             set_pixel_unsafe(x, y, color);
-            error += deltaErr;
-            if(2*error >= deltaY) {
+            error += delta_err;
+            if(2*error >= delta_y) {
                 x += sign;
-                error -= deltaY;
+                error -= delta_y;
             }
         }
     } else {
@@ -44,14 +44,14 @@ void Canvas::draw_line_bresenham_unsafe(int x1, int y1, int x2, int y2, QRgb col
             std::swap(y1, y2);
         }
         int sign = (y1 > y2 ? -1 : 1);
-        int deltaErr = deltaY;
+        int delta_err = delta_y;
         int y = y1;
         for(int x = x1; x <= x2; ++x) {
             set_pixel_unsafe(x, y, color);
-            error += deltaErr;
-            if(2*error >= deltaX) {
+            error += delta_err;
+            if(2*error >= delta_x) {
                 y += sign;
-                error -= deltaX;
+                error -= delta_x;
             }
         }
     }
