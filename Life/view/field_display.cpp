@@ -4,7 +4,7 @@
 #include <QPaintEvent>
 
 FieldDisplay::FieldDisplay(QWidget *parent) :
-    QWidget(parent), canvas(new HexGridCanvas(9, 9, 70))
+    QWidget(parent), canvas(new HexGridCanvas(9, 9, 25))
 {
     setFixedSize(canvas->get_width(), canvas->get_height());
 

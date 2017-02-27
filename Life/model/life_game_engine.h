@@ -7,6 +7,8 @@
 
 class LifeGameEngine {
 public:
+    using CellState = LifeField::CellState;
+
     class Parameters {
     public:
         Parameters(double first_impact,
@@ -83,32 +85,41 @@ public:
         double live_end;
     };
 
-    class ChangeNotifier {
+    class AbstractNotifier {
     public:
-        ChangeNotifier() {}
-        virtual ~ChangeNotifier() {}
+        AbstractNotifier() {}
+        virtual ~AbstractNotifier() {}
         virtual void notify() const = 0;
     };
 
     LifeGameEngine(uint32_t cols,
                    uint32_t rows,
                    const Parameters & parameters,
-                   std::unique_ptr<ChangeNotifier> notifier);
+                   std::unique_ptr<AbstractNotifier> notifier);
 
     void tick();
+
+    bool set_cell_state(uint32_t col, uint32_t row, CellState state);
+
+    const LifeField * get_last_field() const { return last_field; }
+
+    const LifeField * get_current_field() const { return current_field; }
 
 private:
     int first_rank_neighbor_count(uint32_t col, uint32_t row) const;
 
     int second_rank_neighbor_count(uint32_t col, uint32_t row) const;
 
+    void reassign_fields();
+
     LifeField * current_field;
     LifeField * next_field;
+    LifeField * last_field;
     LifeField field1;
     LifeField field2;
+    LifeField field3;
     Parameters parameters;
-    std::unique_ptr<ChangeNotifier> notifier;
+    std::unique_ptr<AbstractNotifier> notifier;
 };
-
 
 #endif //LIFE_GAME_ENGINE_H
