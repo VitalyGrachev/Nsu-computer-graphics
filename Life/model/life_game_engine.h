@@ -11,6 +11,8 @@ public:
 
     class Parameters {
     public:
+        Parameters();
+
         Parameters(double first_impact,
                    double second_impact,
                    double birth_begin,
@@ -112,13 +114,13 @@ private:
 
     void reassign_fields();
 
-    LifeField * current_field;
-    LifeField * next_field;
-    LifeField * last_field;
     LifeField field1;
     LifeField field2;
     LifeField field3;
     Parameters parameters;
+    LifeField * current_field;
+    LifeField * next_field;
+    LifeField * last_field;
     std::unique_ptr<AbstractNotifier> notifier;
 };
 

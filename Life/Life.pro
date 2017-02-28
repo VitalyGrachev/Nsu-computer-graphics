@@ -18,6 +18,7 @@ SOURCES += main.cpp \
     view/main_window.cpp \
     view/canvas.cpp \
     view/hex_grid_canvas.cpp \
+    model/life_field.cc \
     model/life_game_engine.cc
 
 HEADERS  += mainwindow.h \

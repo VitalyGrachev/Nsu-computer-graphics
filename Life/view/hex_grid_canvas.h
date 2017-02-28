@@ -7,11 +7,10 @@
 
 class HexGridCanvas : public Canvas {
 public:
-    HexGridCanvas(int cells_x, int cells_y, int cell_side_size,
-                  const QColor & border_color = QColor(0, 0, 0));
+    HexGridCanvas(int cells_x, int cells_y, int cell_side_size);
 
-    void draw_hex_grid_borders();
-    void draw_hex_border(uint32_t col, uint32_t row);
+    void draw_hex_grid_borders(QRgb border_color);
+    void draw_hex_border(uint32_t col, uint32_t row, QRgb border_color);
     void fill_hex(uint32_t col, uint32_t row, QRgb fill_color);
 private:
     QPoint hex_position(uint32_t col, uint32_t row) const;
@@ -20,7 +19,6 @@ private:
     const int cell_rows;
     const int cell_half_width;
     const int cell_quarter_height;
-    const QRgb border_color;
 };
 
 inline QPoint HexGridCanvas::hex_position(uint32_t col, uint32_t row) const {

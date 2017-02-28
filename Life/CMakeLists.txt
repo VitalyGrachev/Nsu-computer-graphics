@@ -15,7 +15,7 @@ set(SOURCE_FILES
     view/main_window.h
     main.cpp 
     model/life_game_engine.cc 
-    model/life_game_engine.h)
+    model/life_game_engine.h model/life_field.cc)
 
 find_package(Qt5Widgets REQUIRED)
 

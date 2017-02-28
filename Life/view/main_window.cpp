@@ -1,11 +1,11 @@
 #include <QtWidgets/QScrollArea>
 #include "main_window.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(LifeGameEngine * game_engine, QWidget *parent) :
     QMainWindow(parent)
 {
 
-    FieldDisplay * field_display = new FieldDisplay();
+    FieldDisplay * field_display = new FieldDisplay(game_engine, 194);
 
     QScrollArea * scroll_area = new QScrollArea();
     scroll_area->setVisible(true);

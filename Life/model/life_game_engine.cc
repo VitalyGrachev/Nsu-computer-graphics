@@ -14,6 +14,9 @@ LifeGameEngine::Parameters::Parameters(double first_impact,
           live_end(live_end) {
 }
 
+LifeGameEngine::Parameters::Parameters()
+        : Parameters(1.0, 0.3, 2.3, 2.9, 2.0, 3.3) {}
+
 bool LifeGameEngine::Parameters::gonna_stay_alive(int first_count, int second_count) const {
     double impact = first_impact * first_count + second_impact * second_count;
     return (impact >= live_begin) && (impact <= live_end);

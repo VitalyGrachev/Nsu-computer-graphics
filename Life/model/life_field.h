@@ -35,26 +35,6 @@ private:
     const uint32_t rows_;
 };
 
-namespace {
-class RowGenerator {
-public:
-    RowGenerator(uint32_t cols) : cols(cols), dc(1) {}
-    LifeField::Row operator()() {
-        dc = (dc + 1) % 2;
-        return LifeField::Row(cols - dc, LifeField::CellState::DEAD);
-    }
-private:
-    uint32_t cols;
-    uint8_t dc;
-};
-}
-
-LifeField::LifeField(uint32_t cols, uint32_t rows)
-        : field_(rows),
-          cols_(cols), rows_(rows) {
-    std::generate(field_.begin(), field_.end(), RowGenerator(cols));
-}
-
 inline const LifeField::Row & LifeField::operator[](uint32_t row) const {
     return field_[row];
 }
