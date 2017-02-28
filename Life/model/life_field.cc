@@ -1,5 +1,9 @@
 #include "life_field.h"
 
+const LifeStateField::CellState LifeStateField::ALIVE = true;
+
+const LifeStateField::CellState LifeStateField::DEAD = false;
+
 namespace {
 class RowGenerator {
 public:
@@ -7,9 +11,9 @@ public:
 
     RowGenerator(const RowGenerator &) = default;
 
-    LifeField::Row operator()() {
+    LifeStateField::Row operator()() {
         dc = (dc + 1) % 2;
-        return LifeField::Row(cols - dc, LifeField::CellState::DEAD);
+        return LifeStateField::Row(cols - dc, LifeStateField::DEAD);
     }
 
 private:
@@ -18,10 +22,21 @@ private:
 };
 }
 
-LifeField::LifeField(uint32_t cols, uint32_t rows) :
-        field_(rows),
+LifeStateField::LifeStateField(uint32_t cols, uint32_t rows) :
+        states(rows),
         cols_(cols),
         rows_(rows) {
     RowGenerator generator(cols_);
-    std::generate(field_.begin(), field_.end(), generator);
+    std::generate(states.begin(), states.end(), generator);
+}
+
+void LifeStateField::clear() {
+    for (Row & row : states) {
+        std::fill(row.begin(), row.end(), DEAD);
+    }
+}
+
+bool LifeStateField::is_contained(int col, int row) {
+    return (row >= 0 && row < states.size() &&
+            col >= 0 && col < states[row].size());
 }

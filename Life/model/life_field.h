@@ -5,42 +5,46 @@
 #include <cstdint>
 #include <vector>
 
-class LifeField {
+class LifeStateField {
 public:
-    enum class CellState : char {
-        DEAD, ALIVE
-    };
-
+    using CellState = bool;
     using Row = std::vector<CellState>;
 
-    LifeField(uint32_t cols, uint32_t rows);
+    static const CellState ALIVE;
+    static const CellState DEAD;
 
-    LifeField(const LifeField &) = default;
+    LifeStateField(uint32_t cols, uint32_t rows);
 
-    ~LifeField() = default;
+    LifeStateField(const LifeStateField &) = default;
 
-    LifeField & operator=(const LifeField &) = default;
+    ~LifeStateField() = default;
+
+    LifeStateField & operator=(const LifeStateField &) = default;
+
+    void clear();
 
     const Row & operator[](uint32_t row) const;
 
     Row & operator[](uint32_t row);
+
+    bool is_contained(int col, int row);
 
     uint32_t cols() const { return cols_; }
 
     uint32_t rows() const { return rows_; }
 
 private:
-    std::vector<Row> field_;
-    const uint32_t cols_;
-    const uint32_t rows_;
+    std::vector<Row> states;
+    uint32_t cols_;
+    uint32_t rows_;
 };
 
-inline const LifeField::Row & LifeField::operator[](uint32_t row) const {
-    return field_[row];
+inline const LifeStateField::Row & LifeStateField::operator[](uint32_t row) const {
+    return states[row];
 }
 
-inline LifeField::Row & LifeField::operator[](uint32_t row) {
-    return field_[row];
+inline LifeStateField::Row & LifeStateField::operator[](uint32_t row) {
+    return states[row];
 }
 
 #endif // LIFE_FIELD_H

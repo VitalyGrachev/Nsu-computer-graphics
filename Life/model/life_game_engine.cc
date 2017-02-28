@@ -1,154 +1,145 @@
 #include "life_game_engine.h"
 
-LifeGameEngine::Parameters::Parameters(double first_impact,
-                                       double second_impact,
-                                       double birth_begin,
-                                       double birth_end,
-                                       double live_begin,
-                                       double live_end)
-        : first_impact(first_impact),
-          second_impact(second_impact),
-          birth_begin(birth_begin),
-          birth_end(birth_end),
-          live_begin(live_begin),
-          live_end(live_end) {
-}
-
-LifeGameEngine::Parameters::Parameters()
-        : Parameters(1.0, 0.3, 2.3, 2.9, 2.0, 3.3) {}
-
-bool LifeGameEngine::Parameters::gonna_stay_alive(int first_count, int second_count) const {
-    double impact = first_impact * first_count + second_impact * second_count;
-    return (impact >= live_begin) && (impact <= live_end);
-}
-
-bool LifeGameEngine::Parameters::gonna_be_born(int first_count, int second_count) const {
-    double impact = first_impact * first_count + second_impact * second_count;
-    return (impact >= birth_begin) && (impact <= birth_end);
-}
-
 LifeGameEngine::LifeGameEngine(uint32_t cols,
                                uint32_t rows,
-                               const Parameters & parameters,
                                std::unique_ptr<AbstractNotifier> notifier)
-        : field1(cols, rows),
-          field2(field1),
-          field3(field1),
-          parameters(parameters),
-          current_field(&field1),
-          next_field(&field2),
-          last_field(&field3),
+        : state_field(cols, rows),
+          impact_field(cols, rows),
           notifier(std::move(notifier)) {
 }
 
-int LifeGameEngine::first_rank_neighbor_count(const uint32_t col, const uint32_t row) const {
-    int count = 0;
-    // cols never equals to 1
-    if (field1.rows() == 1) { // only one row exists
-        count = ((col > 0) && ((*current_field)[0][col - 1] == CellState::ALIVE)) +
-                ((col < field1.cols() - 1) && ((*current_field)[0][col + 1] == CellState::ALIVE));
-    } else { // cols > 1 && rows > 1
-        if (col == 0) {
-            if (row == 0) { // first col, first row
-                count = ((*current_field)[0][1] == CellState::ALIVE) +
-                        ((*current_field)[1][0] == CellState::ALIVE);
-            } else if (row == field1.rows() - 1) { // first col, last row
-                count = ((*current_field)[row - 1][0] == CellState::ALIVE) +
-                        ((*current_field)[row][1] == CellState::ALIVE) +
-                        ((row % 2) && ((*current_field)[row - 1][1] == CellState::ALIVE));
-            } else { // first col, central row
-                count = ((*current_field)[row - 1][0] == CellState::ALIVE) +
-                        ((*current_field)[row + 1][0] == CellState::ALIVE) +
-                        ((*current_field)[row][1] == CellState::ALIVE) +
-                        ((row % 2) && (((*current_field)[row - 1][1] == CellState::ALIVE) +
-                                       ((*current_field)[row + 1][1] == CellState::ALIVE)));
-            }
-        } else if (col == field1.cols() - 1 - (row % 2)) {
-            if (row == 0) { // last col, first row
-                count = ((*current_field)[0][col - 1] == CellState::ALIVE) +
-                        ((*current_field)[1][col - 1] == CellState::ALIVE);
-            } else if (row == field1.rows() - 1) { // last col, last row
-                count = ((*current_field)[row][col - 1] == CellState::ALIVE) +
-                        ((*current_field)[row - 1][col - 1 + (row % 2)] == CellState::ALIVE) +
-                        ((row % 2) && ((*current_field)[row - 1][col + 1] == CellState::ALIVE));
-            } else { // last col, central row
-                if (row % 2) {  //  odd row
-                    count = ((*current_field)[row - 1][col + 1] == CellState::ALIVE) +
-                            ((*current_field)[row + 1][col + 1] == CellState::ALIVE) +
-                            ((*current_field)[row - 1][col] == CellState::ALIVE) +
-                            ((*current_field)[row + 1][col] == CellState::ALIVE) +
-                            ((*current_field)[row][col - 1] == CellState::ALIVE);
-                } else {    //  even row
-                    count = ((*current_field)[row - 1][col - 1] == CellState::ALIVE) +
-                            ((*current_field)[row][col - 1] == CellState::ALIVE) +
-                            ((*current_field)[row + 1][col - 1] == CellState::ALIVE);
-                }
-            }
-        } else if (row == 0) { // central col, first row
-            count = ((*current_field)[0][col - 1] == CellState::ALIVE) +
-                    ((*current_field)[0][col + 1] == CellState::ALIVE) +
-                    ((*current_field)[1][col - 1] == CellState::ALIVE) +
-                    ((*current_field)[1][col] == CellState::ALIVE);
-        } else if (row == field1.rows() - 1) { // central col, last row
-            count = ((*current_field)[row][col - 1] == CellState::ALIVE) +
-                    ((*current_field)[row][col + 1] == CellState::ALIVE) +
-                    ((*current_field)[row - 1][col + (row % 2) - 1] == CellState::ALIVE) +
-                    ((*current_field)[row - 1][col + (row % 2)] == CellState::ALIVE);
-        } else { // central col, central row
-            count = ((*current_field)[row - 1][col + (row % 2) - 1] == CellState::ALIVE) +
-                    ((*current_field)[row + 1][col + (row % 2) - 1] == CellState::ALIVE) +
-                    ((*current_field)[row - 1][col + (row % 2)] == CellState::ALIVE) +
-                    ((*current_field)[row + 1][col + (row % 2)] == CellState::ALIVE) +
-                    ((*current_field)[row][col - 1] == CellState::ALIVE) +
-                    ((*current_field)[row][col + 1] == CellState::ALIVE);
+void LifeGameEngine::next_step() {
+    for (uint32_t r = 0; r < state_field.rows(); ++r) {
+        for (uint32_t c = 0; c < state_field.cols() - (r % 2); ++c) {
+            state_field[r][c] = fate_determinant.next_state(state_field[r][c], impact_field[r][c]);
         }
     }
-    return count;
+    recalculate_impact_field();
+    if (notifier) {
+        (*notifier)();
+    }
 }
 
-int LifeGameEngine::second_rank_neighbor_count(const uint32_t col, const uint32_t row) const {
-    const uint32_t xx = col + (row % 2);
-    int count = ((row > 1) && ((*current_field)[row - 2][col] == CellState::ALIVE)) +
-                ((row < field1.rows() - 2) && ((*current_field)[row + 2][col] == CellState::ALIVE)) +
-                ((xx > 1) &&
-                 (((row > 0) && ((*current_field)[row - 1][xx - 2] == CellState::ALIVE)) +
-                  ((row < field1.rows() - 1) && ((*current_field)[row + 1][xx - 2] == CellState::ALIVE)))) +
-                ((xx < field1.cols() - 1 - (row % 2)) &&
-                 (((row > 0) && ((*current_field)[row - 1][xx + 1] == CellState::ALIVE)) +
-                  ((row < field1.rows() - 1) && ((*current_field)[row + 1][xx + 1] == CellState::ALIVE))));
-    return count;
+void LifeGameEngine::clear() {
+    state_field.clear();
+    impact_field.clear();
+    if (notifier) {
+        (*notifier)();
+    }
 }
 
-void LifeGameEngine::reassign_fields() {
-    LifeField * cur = current_field;
-    current_field = next_field;
-    next_field = last_field;
-    last_field = cur;
+void LifeGameEngine::recalculate_impact_field() {
+    impact_field.clear();
+    for (uint32_t r = 0; r < state_field.rows(); ++r) {
+        for (uint32_t c = 0; c < state_field.cols() - (r % 2); ++c) {
+            if (state_field[r][c] == LifeStateField::ALIVE) {
+                propagate_impact(impact_field, c, r, PropagateImpact::Action::INCREASE);
+            }
+        }
+    }
 }
 
-void LifeGameEngine::tick() {
-    for (int r = 0; r < field1.rows(); ++r) {
-        for (int c = 0; c < field1.cols() - (r % 2); ++c) {
-            int first_rank_count = first_rank_neighbor_count(c, r);
-            int second_rank_count = second_rank_neighbor_count(c, r);
-            if ((*current_field)[r][c] == CellState::ALIVE) {
-                (*next_field)[r][c] = (parameters.gonna_stay_alive(first_rank_count, second_rank_count) ?
-                                       CellState::ALIVE : CellState::DEAD);
+void LifeGameEngine::set_neighbour_impacts(double near_neighbour_impact, double far_neighbour_impact) {
+    propagate_impact = PropagateImpact(near_neighbour_impact, far_neighbour_impact);
+    recalculate_impact_field();
+}
+
+bool LifeGameEngine::set_cell_fate_conditions(double birth_begin, double birth_end,
+                                              double live_begin, double live_end) {
+    if (live_begin <= birth_begin &&
+        birth_begin <= birth_end &&
+        birth_end <= live_end) {
+        fate_determinant = CellFateDeterminant(birth_begin, birth_end, live_begin, live_end);
+        return true;
+    }
+    return false;
+}
+
+bool LifeGameEngine::set_cell(uint32_t col, uint32_t row, CellState state) {
+    if (state_field.is_contained(col, row)) {
+        const CellState cur_state = state_field[row][col];
+        if (cur_state != state) {
+            if (cur_state == LifeStateField::ALIVE &&
+                state == LifeStateField::DEAD) {
+                propagate_impact(impact_field, col, row, PropagateImpact::Action::DECREASE);
             } else {
-                (*next_field)[r][c] = (parameters.gonna_be_born(first_rank_count, second_rank_count) ?
-                                       CellState::ALIVE : CellState::DEAD);
+                propagate_impact(impact_field, col, row, PropagateImpact::Action::INCREASE);
+            }
+            state_field[row][col] = state;
+            if (notifier) {
+                (*notifier)();
             }
         }
+        return true;
     }
-    reassign_fields();
-    notifier->notify();
+    return false;
 }
 
-bool LifeGameEngine::set_cell_state(uint32_t col, uint32_t row, CellState state) {
-    if ((col >= field1.cols() - (row % 2)) ||
-        (row >= field1.rows())) {
-        return false;
+const std::array<int, 6> LifeGameEngine::PropagateImpact::near_neighbour_col_shifts_for_even_row = {
+        -1, -1, 0, 1, 0, -1};
+const std::array<int, 6> LifeGameEngine::PropagateImpact::near_neighbour_col_shifts_for_odd_row = {
+        -1, 0, 1, 1, 1, 0};
+const std::array<int, 6> LifeGameEngine::PropagateImpact::far_neighbour_col_shifts_for_even_row = {
+        -2, 0, 1, 1, 0, -2};
+const std::array<int, 6> LifeGameEngine::PropagateImpact::far_neighbour_col_shifts_for_odd_row = {
+        -1, 0, 2, 2, 0, -1};
+const std::array<int, 6> LifeGameEngine::PropagateImpact::near_neighbour_row_shifts = {
+        0, -1, -1, 0, 1, 1};
+const std::array<int, 6> LifeGameEngine::PropagateImpact::far_neighbour_row_shifts = {
+        -1, -2, -1, 1, 2, 1};
+
+LifeGameEngine::PropagateImpact::PropagateImpact()
+        : PropagateImpact(1.0, 0.3) {}
+
+LifeGameEngine::PropagateImpact::PropagateImpact(double near_neighbour_impact,
+                                                 double far_neighbour_impact)
+        : near_neighbour_impact(near_neighbour_impact),
+          far_neighbour_impact(far_neighbour_impact) {}
+
+void LifeGameEngine::PropagateImpact::operator()(LifeImpactField & impact_field,
+                                                 int32_t col, uint32_t row,
+                                                 Action action) const {
+    const std::array<int, 6> & near_col_shifts = (row % 2 ?
+                                                  near_neighbour_col_shifts_for_odd_row :
+                                                  near_neighbour_col_shifts_for_even_row);
+    const std::array<int, 6> & far_col_shifts = (row % 2 ?
+                                                 far_neighbour_col_shifts_for_odd_row :
+                                                 far_neighbour_col_shifts_for_even_row);
+    const double sign = (action == Action::INCREASE ? 1.0 : -1.0);
+    for (int i = 0; i < 6; ++i) {
+        const int nc = col + near_col_shifts[i];
+        const int nr = row + near_neighbour_row_shifts[i];
+        if (impact_field.is_contained(nc, nr)) {
+            impact_field[nr][nc] += sign * near_neighbour_impact;
+        }
+
+        const int fc = col + far_col_shifts[i];
+        const int fr = row + far_neighbour_row_shifts[i];
+        if (impact_field.is_contained(fc, fr)) {
+            impact_field[fr][fc] += sign * far_neighbour_impact;
+        }
     }
-    (*current_field)[row][col] = state;
-    return true;
+}
+
+LifeGameEngine::CellFateDeterminant::CellFateDeterminant(double birth_begin, double birth_end,
+                                                         double live_begin, double live_end)
+        : birth_begin(birth_begin),
+          birth_end(birth_end),
+          live_begin(live_begin),
+          live_end(live_end) {}
+
+LifeGameEngine::CellFateDeterminant::CellFateDeterminant()
+        : CellFateDeterminant(2.3, 2.9, 2.0, 3.3) {}
+
+CellState LifeGameEngine::CellFateDeterminant::next_state(CellState current_state,
+                                                          double cell_impact) const {
+    CellState next_state;
+    if (current_state == LifeStateField::ALIVE) {
+        next_state = ((cell_impact >= live_begin) && (cell_impact <= live_end) ?
+                      LifeStateField::ALIVE : LifeStateField::DEAD);
+    } else {
+        next_state = ((cell_impact >= birth_begin) && (cell_impact <= birth_end) ?
+                      LifeStateField::ALIVE : LifeStateField::DEAD);
+    }
+    return next_state;
 }
