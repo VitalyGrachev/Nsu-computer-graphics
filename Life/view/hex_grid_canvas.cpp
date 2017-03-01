@@ -54,9 +54,9 @@ void HexGridCanvas::fill_hex(uint32_t col, uint32_t row, QRgb fill_color) {
     const int dx = cell_half_width;
     const int dy = cell_quarter_height;
     const int delta_err = dy;
-    int  error = 0;
-    int  ry = 0;
-    for (int  rx = 0; rx < dx; ++rx) {
+    int error = 0;
+    int ry = 0;
+    for (int rx = 0; rx < dx; ++rx) {
         error += delta_err;
         if (2 * error >= dx) {
             ++ry;
@@ -77,4 +77,47 @@ void HexGridCanvas::fill_hex(uint32_t col, uint32_t row, QRgb fill_color) {
                              hex_pos.y() + dy + ry,
                              fill_color);
     }
+}
+
+bool HexGridCanvas::hex_under_cursor(int x, int y,
+                                     uint32_t * hex_col, uint32_t * hex_row) const {
+
+    int hr = y / (3 * cell_quarter_height);
+    int hc = (x - (hr % 2) * cell_half_width) / (2 * cell_half_width);
+
+    if (x < (hr % 2) * cell_half_width) {
+        return false;
+    }
+
+    int yy = y % (3 * cell_quarter_height);
+    int xx = (x - (hr % 2) * cell_half_width) % (2 * cell_half_width);
+
+    int dx = std::abs(cell_half_width - xx);
+    int dy = (2 * dx * cell_quarter_height + cell_half_width) / (2 * cell_half_width);
+    if (yy == dy || !xx) {
+        return false;
+    }
+    if (yy > dy) {
+        if (hc < 0 || hc >= cell_cols - (hr % 2) ||
+            hr < 0 || hr >= cell_rows) {
+            return false;
+        }
+        *hex_col = hc;
+        *hex_row = hr;
+    } else if (xx > cell_half_width) {
+        if (hc + (hr % 2) < 0 || hc + (hr % 2) >= cell_cols - (hr % 2) ||
+            hr < 1 || hr > cell_rows) {
+            return false;
+        }
+        *hex_col = hc + (hr % 2);
+        *hex_row = hr - 1;
+    } else {
+        if (hc + (hr % 2) < 1 || hc + (hr % 2) > cell_cols - (hr % 2) ||
+            hr < 1 || hr > cell_rows) {
+            return false;
+        }
+        *hex_col = hc + (hr % 2) - 1;
+        *hex_row = hr - 1;
+    }
+    return true;
 }

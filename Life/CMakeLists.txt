@@ -20,7 +20,7 @@ set(SOURCE_FILES
         model/life_impacts.cc
         model/life_impacts.h
         model/abstract_notifier.h
-        view/signal_notifier.h)
+        view/signal_notifier.h view/mode.h)
 
 find_package(Qt5Widgets REQUIRED)
 

@@ -28,10 +28,15 @@ public slots:
 protected:
     void paintEvent(QPaintEvent * event) override;
 
+    void mousePressEvent(QMouseEvent * event) override;
+
 private:
     void redraw_changed_cells();
 
     void redraw_all_cells();
+
+    bool hex_under_cursor(int x, int y,
+                          uint32_t * hex_col, uint32_t * hex_row) const;
 
     LifeGameEngine * game_engine;
     LifeStateField last_states;
@@ -43,7 +48,11 @@ private:
     bool should_show_impacts;
     bool can_show_impacts;
 
+    static const uint32_t margin = 4;
     static const uint32_t min_edge_to_show_impacts = 6;
+    static const QColor default_border_color;
+    static const QColor default_dead_color;
+    static const QColor default_alive_color;
 };
 
 #endif // FIELD_DISPLAY_H

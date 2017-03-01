@@ -51,7 +51,7 @@ private:
 
     static const uint32_t default_cols = 10;
     static const uint32_t default_rows = 10;
-    static const uint32_t default_edge_size = 10;
+    static const uint32_t default_edge_size = 70;
 };
 
 #endif // MAIN_WINDOW_H

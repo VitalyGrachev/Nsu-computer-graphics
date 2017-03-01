@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget * parent)
     field_scroll_area->setWidgetResizable(true);
     field_display = new FieldDisplay(game_engine.get(), default_edge_size);
     field_scroll_area->setWidget(field_display);
+    field_scroll_area->setPalette(field_display->palette());
 
     connect_all();
 
