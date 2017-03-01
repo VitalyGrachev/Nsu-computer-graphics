@@ -1,8 +1,8 @@
 #ifndef LIFE_GAME_ENGINE_H
 #define LIFE_GAME_ENGINE_H
 
+#include <array>
 #include <cstdint>
-#include <memory>
 
 #include "life_field.h"
 #include "abstract_notifier.h"
@@ -16,7 +16,7 @@ public:
 
     LifeGameEngine(uint32_t cols,
                    uint32_t rows,
-                   std::unique_ptr<AbstractNotifier> notifier);
+                   AbstractNotifier * notifier);
 
     LifeGameEngine(const LifeGameEngine &) = delete;
 
@@ -98,7 +98,7 @@ private:
 
     LifeStateField state_field;
     LifeImpactField impact_field;
-    std::unique_ptr<AbstractNotifier> notifier;
+    AbstractNotifier * notifier;
     CellFateDeterminant fate_determinant;
     PropagateImpact propagate_impact;
 };

@@ -2,10 +2,10 @@
 
 LifeGameEngine::LifeGameEngine(uint32_t cols,
                                uint32_t rows,
-                               std::unique_ptr<AbstractNotifier> notifier)
+                               AbstractNotifier * notifier)
         : state_field(cols, rows),
           impact_field(cols, rows),
-          notifier(std::move(notifier)) {
+          notifier(notifier) {
 }
 
 void LifeGameEngine::next_step() {

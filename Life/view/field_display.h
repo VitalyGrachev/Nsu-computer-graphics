@@ -2,6 +2,7 @@
 #define FIELD_DISPLAY_H
 
 #include <QWidget>
+#include <memory>
 #include "hex_grid_canvas.h"
 #include "../model/life_game_engine.h"
 

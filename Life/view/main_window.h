@@ -5,8 +5,10 @@
 #include <QScrollArea>
 #include <QAction>
 #include <QTimer>
+#include <memory>
 
 #include "field_display.h"
+#include "signal_notifier.h"
 
 class MainWindow : public QMainWindow
 {
@@ -27,8 +29,11 @@ private slots:
 private:
     void create_actions();
     void create_menus();
+    void connect_all();
+    bool open_field_file(const QString & filename);
 
-    LifeGameEngine * game_engine;
+    std::unique_ptr<SignalNotifier> signal_notifier;
+    std::unique_ptr<LifeGameEngine> game_engine;
     FieldDisplay * field_display;
     QScrollArea * field_scroll_area;
 
@@ -43,6 +48,10 @@ private:
     QAction * clear_field_action;
 
     QTimer * timer;
+
+    static const uint32_t default_cols = 10;
+    static const uint32_t default_rows = 10;
+    static const uint32_t default_edge_size = 10;
 };
 
 #endif // MAIN_WINDOW_H
