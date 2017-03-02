@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     view/hex_grid_canvas.cpp \
     model/life_field.cc \
     model/life_game_engine.cc \
-    model/life_impacts.cc
+    model/life_impacts.cc \
+    view/new_field_dialog.cc
 
 HEADERS  += mainwindow.h \
     view/field_display.h \
@@ -32,4 +33,5 @@ HEADERS  += mainwindow.h \
     view/signal_notifier.h \
     model/abstract_notifier.h \
     model/life_impacts.h \
-    view/mode.h
+    view/mode.h \
+    view/new_field_dialog.h
