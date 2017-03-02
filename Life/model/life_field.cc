@@ -36,7 +36,15 @@ void LifeStateField::clear() {
     }
 }
 
-bool LifeStateField::is_contained(int col, int row) {
+bool LifeStateField::is_contained(int col, int row) const {
     return (row >= 0 && row < states.size() &&
             col >= 0 && col < states[row].size());
+}
+
+uint64_t LifeStateField::alive_cells_count() const {
+    uint64_t count = 0u;
+    for(const Row & row : states) {
+        count += std::count(row.begin(), row.end(), ALIVE);
+    }
+    return count;
 }

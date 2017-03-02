@@ -27,7 +27,9 @@ public:
 
     Row & operator[](uint32_t row);
 
-    bool is_contained(int col, int row);
+    bool is_contained(int col, int row) const;
+
+    uint64_t alive_cells_count() const;
 
     uint32_t cols() const { return cols_; }
 

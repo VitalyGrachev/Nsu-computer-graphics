@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <QPainter>
 #include <QPaintEvent>
+#include <iostream>
 
 const QColor FieldDisplay::default_border_color = QColor(70, 70, 70);
 const QColor FieldDisplay::default_dead_color = QColor(225, 225, 225);
@@ -21,7 +22,8 @@ FieldDisplay::FieldDisplay(LifeGameEngine * life_game_engine,
           dead_color(default_dead_color.rgb()),
           alive_color(default_alive_color.rgb()),
           should_show_impacts(false),
-          can_show_impacts(cell_edge_size >= min_edge_to_show_impacts) {
+          can_show_impacts(cell_edge_size >= min_edge_to_show_impacts),
+          current_mode(Mode::REPLACE) {
     setFixedSize(canvas->get_width() + 2 * margin, canvas->get_height() + 2 * margin);
     QPalette widget_palette = palette();
     widget_palette.setColor(QPalette::Window, default_dead_color);
@@ -39,12 +41,33 @@ void FieldDisplay::paintEvent(QPaintEvent * event) {
 
 void FieldDisplay::mousePressEvent(QMouseEvent * event) {
     uint32_t col, row;
+    if (event->button() == Qt::LeftButton &&
+        hex_under_cursor(event->x(), event->y(), &col, &row)) {
+        click_on_hex(col, row);
+        last_visited_hex = QPoint(col, row);
+    }
+}
+
+void FieldDisplay::mouseMoveEvent(QMouseEvent * event) {
+    uint32_t col, row;
     if (hex_under_cursor(event->x(), event->y(), &col, &row)) {
+        QPoint cur_hex(col, row);
+        if(cur_hex != last_visited_hex) {
+            click_on_hex(col, row);
+            last_visited_hex = cur_hex;
+        }
+    }
+}
+
+void FieldDisplay::click_on_hex(uint32_t col, uint32_t row) {
+    if (current_mode == Mode::XOR) {
         if (last_states[row][col] == LifeStateField::ALIVE) {
             game_engine->set_cell(col, row, LifeStateField::DEAD);
         } else {
             game_engine->set_cell(col, row);
         }
+    } else {
+        game_engine->set_cell(col, row);
     }
 }
 
@@ -114,4 +137,11 @@ void FieldDisplay::toggle_impacts() {
         redraw_all_cells();
         update();
     }
+}
+
+void FieldDisplay::set_XOR_mode() {
+    current_mode = Mode::XOR;
+}
+void FieldDisplay::set_replace_mode() {
+    current_mode = Mode::REPLACE;
 }

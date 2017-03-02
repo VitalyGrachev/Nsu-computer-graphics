@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <memory>
 #include "hex_grid_canvas.h"
+#include "mode.h"
 #include "../model/life_game_engine.h"
 
 class FieldDisplay : public QWidget {
@@ -19,18 +20,28 @@ public:
 
     FieldDisplay & operator=(const FieldDisplay &) = delete;
 
+    int get_cell_edge_size() const { return canvas->get_cell_edge_size(); }
+
 public slots:
 
     void model_changed();
 
     void toggle_impacts();
 
+    void set_XOR_mode();
+
+    void set_replace_mode();
+
 protected:
     void paintEvent(QPaintEvent * event) override;
 
     void mousePressEvent(QMouseEvent * event) override;
 
+    void mouseMoveEvent(QMouseEvent * event) override;
+
 private:
+    void click_on_hex(uint32_t col, uint32_t row);
+
     void redraw_changed_cells();
 
     void redraw_all_cells();
@@ -47,6 +58,8 @@ private:
     const QRgb alive_color;
     bool should_show_impacts;
     bool can_show_impacts;
+    Mode current_mode;
+    QPoint last_visited_hex;
 
     static const uint32_t margin = 4;
     static const uint32_t min_edge_to_show_impacts = 6;

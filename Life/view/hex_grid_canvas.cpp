@@ -4,13 +4,14 @@ const float HALF_SQRT_OF_3 = 0.866f;
 
 HexGridCanvas::HexGridCanvas(int cells_x,
                              int cells_y,
-                             int cell_side_size)
-        : Canvas((2 * cells_x) * static_cast<int>(cell_side_size * HALF_SQRT_OF_3) + 1,
-                 (1 + cells_y * 3) * (cell_side_size / 2) + 1),
+                             int cell_edge_size)
+        : Canvas((2 * cells_x) * static_cast<int>(cell_edge_size * HALF_SQRT_OF_3) + 1,
+                 (1 + cells_y * 3) * (cell_edge_size / 2) + 1),
           cell_cols(cells_x),
           cell_rows(cells_y),
-          cell_half_width(static_cast<int>(cell_side_size * HALF_SQRT_OF_3)),
-          cell_quarter_height(cell_side_size / 2) {
+          cell_edge_size(cell_edge_size),
+          cell_half_width(static_cast<int>(cell_edge_size * HALF_SQRT_OF_3)),
+          cell_quarter_height(cell_edge_size / 2) {
 }
 
 void HexGridCanvas::draw_hex_border(uint32_t col, uint32_t row, QRgb border_color) {
