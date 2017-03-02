@@ -13,6 +13,8 @@ set(SOURCE_FILES
         view/hex_grid_canvas.h
         view/main_window.cpp
         view/main_window.h
+        view/new_field_dialog.h
+        view/new_field_dialog.cc
         main.cpp
         model/life_game_engine.cc
         model/life_game_engine.h

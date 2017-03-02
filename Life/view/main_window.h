@@ -3,6 +3,7 @@
 
 #include <QAction>
 #include <QActionGroup>
+#include <QDialog>
 #include <QMainWindow>
 #include <QTimer>
 #include <QToolBar>
@@ -11,6 +12,7 @@
 
 #include "field_display.h"
 #include "signal_notifier.h"
+#include "new_field_dialog.h"
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
@@ -25,8 +27,6 @@ private slots:
 
     void save_field();
 
-    void exit();
-
     void next_step();
 
     void set_cell(uint32_t col, uint32_t row, CellState state);
@@ -35,7 +35,11 @@ private slots:
 
     void clear_field();
 
+    void show_options();
+
     void show_about();
+
+    void create_new_field(int cols, int rows, int cell_edge);
 
 private:
     void create_actions();
@@ -43,6 +47,10 @@ private:
     void create_menus();
 
     void create_toolbar();
+
+    void create_new_field_dialog();
+
+    void create_options_dialog();
 
     void connect_all();
 
@@ -64,7 +72,6 @@ private:
     QAction * new_field_action;
     QAction * open_field_action;
     QAction * save_field_action;
-    QAction * exit_action;
     QAction * next_step_action;
     QAction * run_action;
     QAction * toggle_impacts_action;
@@ -84,13 +91,19 @@ private:
 
     QTimer * timer;
 
+    NewFieldDialog * new_field_dialog;
+    QDialog * options_dialog;
+
     bool is_running;
 
     static const uint32_t default_cols = 16;
     static const uint32_t default_rows = 16;
     static const uint32_t default_edge_size = 20;
+    static const uint32_t min_cols = 2;
+    static const uint32_t min_rows = 2;
     static const uint32_t max_cols = 150;
     static const uint32_t max_rows = 150;
+    static const uint32_t min_edge_size = 3;
     static const uint32_t max_edge_size = 100;
     static const int timer_interval_msec = 500;
 };
