@@ -5,12 +5,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
-#include <QSpinBox>
-#include <QSlider>
-#include <QPushButton>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget * parent)
         : QMainWindow(parent),
@@ -23,8 +18,6 @@ MainWindow::MainWindow(QWidget * parent)
     create_actions();
     create_menus();
     create_toolbar();
-    create_new_field_dialog();
-    create_options_dialog();
 
     timer->setInterval(timer_interval_msec);
 
@@ -143,18 +136,6 @@ void MainWindow::create_toolbar() {
     addToolBar(toolbar);
 }
 
-void MainWindow::create_new_field_dialog() {
-    new_field_dialog = new NewFieldDialog(min_cols, max_cols,
-                                          min_rows, max_rows,
-                                          min_edge_size, max_edge_size, this);
-    connect(new_field_dialog, SIGNAL(create_new_field(int, int, int)),
-            this, SLOT(create_new_field(int, int, int)));
-}
-
-void MainWindow::create_options_dialog() {
-
-}
-
 void MainWindow::connect_all() {
     connect(new_field_action, &QAction::triggered,
             this, &MainWindow::new_field);
@@ -171,8 +152,6 @@ void MainWindow::connect_all() {
             this, &MainWindow::toggle_run);
     connect(clear_field_action, &QAction::triggered,
             this, &MainWindow::clear_field);
-    connect(set_options_action, &QAction::triggered,
-            this, &MainWindow::show_options);
 
     connect(show_about_action, &QAction::triggered,
             this, &MainWindow::show_about);
@@ -196,9 +175,7 @@ void MainWindow::connect_all() {
             this, &MainWindow::next_step);
 }
 
-void MainWindow::new_field() {
-    new_field_dialog->exec();
-}
+void MainWindow::new_field() {}
 
 void MainWindow::open_field() {
     QString file_name = QFileDialog::getOpenFileName(this, tr("Open File"),
@@ -272,57 +249,9 @@ void MainWindow::clear_field() {
     game_engine->clear();
 }
 
-void MainWindow::show_options() {
-    options_dialog->exec();
-}
-
 void MainWindow::show_about() {
     QMessageBox::about(this, tr("About FIT_14202_Grachev_Life"),
                        tr("Life Version 1.0, NSU FIT 14202 Grachev"));
-}
-
-void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
-    std::unique_ptr<SignalNotifier> notifier(new SignalNotifier());
-    std::unique_ptr<LifeGameEngine> engine(new LifeGameEngine(cols, rows, notifier.get()));
-    std::unique_ptr<FieldDisplay> display(new FieldDisplay(engine.get(), cell_edge));
-    connect(notifier.get(), SIGNAL(notification()),
-            display.get(), SLOT(model_changed()));
-
-
-    disconnect(field_display, &FieldDisplay::set_cell,
-               this, &MainWindow::set_cell);
-
-    disconnect(signal_notifier.get(), &SignalNotifier::notification,
-               field_display, &FieldDisplay::model_changed);
-
-    disconnect(toggle_impacts_action, &QAction::triggered,
-               field_display, &FieldDisplay::toggle_impacts);
-
-    disconnect(set_xor_mode_action, &QAction::triggered,
-               field_display, &FieldDisplay::set_XOR_mode);
-
-    disconnect(set_replace_mode_action, &QAction::triggered,
-               field_display, &FieldDisplay::set_replace_mode);
-
-    signal_notifier = std::move(notifier);
-    game_engine = std::move(engine);
-    field_display = display.release();
-    field_scroll_area->setWidget(field_display);
-
-    connect(field_display, &FieldDisplay::set_cell,
-            this, &MainWindow::set_cell);
-
-    connect(signal_notifier.get(), &SignalNotifier::notification,
-            field_display, &FieldDisplay::model_changed);
-
-    connect(toggle_impacts_action, &QAction::triggered,
-            field_display, &FieldDisplay::toggle_impacts);
-
-    connect(set_xor_mode_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_XOR_mode);
-
-    connect(set_replace_mode_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_replace_mode);
 }
 
 bool MainWindow::load_field_from_file(const QString & file_name) {
