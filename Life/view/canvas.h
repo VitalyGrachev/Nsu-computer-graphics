@@ -25,8 +25,8 @@ protected:
     void draw_horizontal_line(int x1, int x2, int y, QRgb color);
     void draw_line_bresenham_unsafe(int x1, int y1, int x2, int y2, QRgb color);
 
-private:
     QImage image;
+private:
     uchar * image_start;
     int image_bytes_per_line;
     int bytes_per_line;

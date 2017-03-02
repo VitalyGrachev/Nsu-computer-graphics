@@ -7,11 +7,13 @@ HexGridCanvas::HexGridCanvas(int cells_x,
                              int cell_edge_size)
         : Canvas((2 * cells_x) * static_cast<int>(cell_edge_size * HALF_SQRT_OF_3) + 1,
                  (1 + cells_y * 3) * (cell_edge_size / 2) + 1),
+          text_painter(&image),
           cell_cols(cells_x),
           cell_rows(cells_y),
           cell_edge_size(cell_edge_size),
           cell_half_width(static_cast<int>(cell_edge_size * HALF_SQRT_OF_3)),
           cell_quarter_height(cell_edge_size / 2) {
+    text_painter.setFont(QFont("Arial", font_size));
 }
 
 void HexGridCanvas::draw_hex_border(uint32_t col, uint32_t row, QRgb border_color) {
@@ -121,4 +123,14 @@ bool HexGridCanvas::hex_under_cursor(int x, int y,
         *hex_row = hr - 1;
     }
     return true;
+}
+
+void HexGridCanvas::draw_hex_text(uint32_t col, uint32_t row,
+                                  const QString & text,
+                                  const QColor & text_color) {
+    const QPoint hex_pos = hex_position(col, row);
+    text_painter.setPen(text_color);
+    text_painter.drawText(QRect(hex_pos.x(), hex_pos.y() + cell_quarter_height,
+                                2 * cell_half_width + 1, 2 * cell_quarter_height + 1),
+                          Qt::AlignCenter, text);
 }

@@ -68,6 +68,7 @@ private:
         static const std::array<int, 6> far_neighbour_col_shifts_for_odd_row;
         static const std::array<int, 6> near_neighbour_row_shifts;
         static const std::array<int, 6> far_neighbour_row_shifts;
+        static const double eps;
     };
 
     class CellFateDeterminant {

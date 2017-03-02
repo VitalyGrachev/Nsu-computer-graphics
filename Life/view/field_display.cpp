@@ -8,6 +8,7 @@
 const QColor FieldDisplay::default_border_color = QColor(70, 70, 70);
 const QColor FieldDisplay::default_dead_color = QColor(225, 225, 225);
 const QColor FieldDisplay::default_alive_color = QColor(0, 220, 0);
+const QColor FieldDisplay::default_text_color = QColor(0, 0, 0);
 
 FieldDisplay::FieldDisplay(LifeGameEngine * life_game_engine,
                            uint32_t cell_edge_size,
@@ -22,8 +23,8 @@ FieldDisplay::FieldDisplay(LifeGameEngine * life_game_engine,
           dead_color(default_dead_color.rgb()),
           alive_color(default_alive_color.rgb()),
           should_show_impacts(false),
-          can_show_impacts(cell_edge_size >= min_edge_to_show_impacts),
-          current_mode(Mode::REPLACE) {
+          can_show_impacts(cell_edge_size >= HexGridCanvas::font_size),
+          current_mode(Mode::XOR) {
     setFixedSize(canvas->get_width() + 2 * margin, canvas->get_height() + 2 * margin);
     QPalette widget_palette = palette();
     widget_palette.setColor(QPalette::Window, default_dead_color);
@@ -62,12 +63,12 @@ void FieldDisplay::mouseMoveEvent(QMouseEvent * event) {
 void FieldDisplay::click_on_hex(uint32_t col, uint32_t row) {
     if (current_mode == Mode::XOR) {
         if (last_states[row][col] == LifeStateField::ALIVE) {
-            game_engine->set_cell(col, row, LifeStateField::DEAD);
+            emit set_cell(col, row, LifeStateField::DEAD);
         } else {
-            game_engine->set_cell(col, row);
+            emit set_cell(col, row, LifeStateField::ALIVE);
         }
     } else {
-        game_engine->set_cell(col, row);
+        emit set_cell(col, row, LifeStateField::ALIVE);
     }
 }
 
@@ -88,7 +89,9 @@ void FieldDisplay::redraw_changed_cells() {
                 last_states[row][col] = cur_states[row][col];
 
                 if (should_show_impacts && can_show_impacts) {
-                    // TODO: print impact
+                    canvas->draw_hex_text(col, row,
+                                          QString::number(cur_impacts[row][col], 'g', 2),
+                                          default_text_color);
                     last_impacts[row][col] = cur_impacts[row][col];
                 }
             }
@@ -109,7 +112,9 @@ void FieldDisplay::redraw_all_cells() {
             last_states[row][col] = cur_states[row][col];
 
             if (should_show_impacts && can_show_impacts) {
-                // TODO: print impact
+                canvas->draw_hex_text(col, row,
+                                      QString::number(cur_impacts[row][col], 'g', 2),
+                                      default_text_color);
                 last_impacts[row][col] = cur_impacts[row][col];
             }
         }

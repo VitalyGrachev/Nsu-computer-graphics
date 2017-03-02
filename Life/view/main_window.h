@@ -5,6 +5,7 @@
 #include <QActionGroup>
 #include <QMainWindow>
 #include <QTimer>
+#include <QToolBar>
 #include <QScrollArea>
 #include <memory>
 
@@ -28,14 +29,20 @@ private slots:
 
     void next_step();
 
+    void set_cell(uint32_t col, uint32_t row, CellState state);
+
     void toggle_run();
 
     void clear_field();
+
+    void show_about();
 
 private:
     void create_actions();
 
     void create_menus();
+
+    void create_toolbar();
 
     void connect_all();
 
@@ -52,26 +59,39 @@ private:
     FieldDisplay * field_display;
     QScrollArea * field_scroll_area;
 
+    QToolBar * toolbar;
+
     QAction * new_field_action;
     QAction * open_field_action;
     QAction * save_field_action;
     QAction * exit_action;
-
     QAction * next_step_action;
     QAction * run_action;
     QAction * toggle_impacts_action;
     QAction * clear_field_action;
+    QAction * set_options_action;
     QAction * set_replace_mode_action;
     QAction * set_xor_mode_action;
+    QAction * show_about_action;
+
     QActionGroup * mode_action_group;
+
+    QMenu * file_menu;
+    QMenu * edit_menu;
+    QMenu * view_menu;
+    QMenu * action_menu;
+    QMenu * help_menu;
 
     QTimer * timer;
 
     bool is_running;
 
-    static const uint32_t default_cols = 10;
-    static const uint32_t default_rows = 10;
-    static const uint32_t default_edge_size = 30;
+    static const uint32_t default_cols = 16;
+    static const uint32_t default_rows = 16;
+    static const uint32_t default_edge_size = 20;
+    static const uint32_t max_cols = 150;
+    static const uint32_t max_rows = 150;
+    static const uint32_t max_edge_size = 100;
     static const int timer_interval_msec = 500;
 };
 

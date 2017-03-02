@@ -32,6 +32,9 @@ public slots:
 
     void set_replace_mode();
 
+signals:
+    void set_cell(uint32_t col, uint32_t row, CellState state);
+
 protected:
     void paintEvent(QPaintEvent * event) override;
 
@@ -62,10 +65,10 @@ private:
     QPoint last_visited_hex;
 
     static const uint32_t margin = 4;
-    static const uint32_t min_edge_to_show_impacts = 6;
     static const QColor default_border_color;
     static const QColor default_dead_color;
     static const QColor default_alive_color;
+    static const QColor default_text_color;
 };
 
 #endif // FIELD_DISPLAY_H

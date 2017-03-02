@@ -87,6 +87,7 @@ const std::array<int, 6> LifeGameEngine::PropagateImpact::near_neighbour_row_shi
         0, -1, -1, 0, 1, 1};
 const std::array<int, 6> LifeGameEngine::PropagateImpact::far_neighbour_row_shifts = {
         -1, -2, -1, 1, 2, 1};
+const double LifeGameEngine::PropagateImpact::eps = 0.09;
 
 LifeGameEngine::PropagateImpact::PropagateImpact()
         : PropagateImpact(1.0, 0.3) {}
@@ -111,12 +112,18 @@ void LifeGameEngine::PropagateImpact::operator()(LifeImpactField & impact_field,
         const int nr = row + near_neighbour_row_shifts[i];
         if (impact_field.is_contained(nc, nr)) {
             impact_field[nr][nc] += sign * near_neighbour_impact;
+            if(impact_field[nr][nc] < eps) {
+                impact_field[nr][nc] = 0.0;
+            }
         }
 
         const int fc = col + far_col_shifts[i];
         const int fr = row + far_neighbour_row_shifts[i];
         if (impact_field.is_contained(fc, fr)) {
             impact_field[fr][fc] += sign * far_neighbour_impact;
+            if(impact_field[fr][fc] < eps) {
+                impact_field[fr][fc] = 0.0;
+            }
         }
     }
 }
