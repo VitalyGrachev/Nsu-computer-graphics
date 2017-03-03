@@ -145,7 +145,7 @@ void MainWindow::create_new_field_dialog() {
                                           min_rows, max_rows,
                                           min_edge_size, max_edge_size, this);
     connect(new_field_dialog, SIGNAL(create_new_field(int, int, int)),
-    this, SLOT(create_new_field(int, int, int)));
+            this, SLOT(create_new_field(int, int, int)));
 }
 
 void MainWindow::create_options_dialog() {
@@ -179,7 +179,7 @@ void MainWindow::connect_all() {
             field_display, &FieldDisplay::model_changed);
 
     connect(toggle_impacts_action, &QAction::triggered,
-            field_display, &FieldDisplay::toggle_impacts);
+            field_display, &FieldDisplay::set_impacts);
 
     connect(set_xor_mode_action, &QAction::triggered,
             field_display, &FieldDisplay::set_XOR_mode);
@@ -233,20 +233,20 @@ void MainWindow::next_step() {
     game_engine->next_step();
 }
 
-void MainWindow::stop_timer() {
-    run_action->setChecked(false);
-    clear_field_action->setEnabled(true);
-    next_step_action->setEnabled(true);
-    timer->stop();
-    is_running = false;
-}
-
 void MainWindow::start_timer() {
     is_running = true;
     run_action->setChecked(true);
     clear_field_action->setEnabled(false);
     next_step_action->setEnabled(false);
     timer->start();
+}
+
+void MainWindow::stop_timer() {
+    run_action->setChecked(false);
+    clear_field_action->setEnabled(true);
+    next_step_action->setEnabled(true);
+    timer->stop();
+    is_running = false;
 }
 
 void MainWindow::toggle_run() {
@@ -270,14 +270,9 @@ void MainWindow::show_about() {
                        tr("Life Version 1.0, NSU FIT 14202 Grachev"));
 }
 
-void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
-    std::unique_ptr<SignalNotifier> notifier(new SignalNotifier());
-    std::unique_ptr<LifeGameEngine> engine(new LifeGameEngine(cols, rows, notifier.get()));
-    std::unique_ptr<FieldDisplay> display(new FieldDisplay(engine.get(), cell_edge));
-    connect(notifier.get(), SIGNAL(notification()),
-            display.get(), SLOT(model_changed()));
-
-
+void MainWindow::set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
+                                    std::unique_ptr<LifeGameEngine> && engine,
+                                    std::unique_ptr<FieldDisplay> && display) {
     disconnect(field_display, &FieldDisplay::set_cell,
                this, &MainWindow::set_cell);
 
@@ -285,7 +280,7 @@ void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
                field_display, &FieldDisplay::model_changed);
 
     disconnect(toggle_impacts_action, &QAction::triggered,
-               field_display, &FieldDisplay::toggle_impacts);
+               field_display, &FieldDisplay::set_impacts);
 
     disconnect(set_xor_mode_action, &QAction::triggered,
                field_display, &FieldDisplay::set_XOR_mode);
@@ -298,6 +293,9 @@ void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
     field_display = display.release();
     field_scroll_area->setWidget(field_display);
 
+    toggle_impacts_action->setChecked(false);
+    toggle_impacts_action->setEnabled(field_display->get_cell_edge_size() > HexGridCanvas::font_size);
+
     connect(field_display, &FieldDisplay::set_cell,
             this, &MainWindow::set_cell);
 
@@ -305,13 +303,23 @@ void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
             field_display, &FieldDisplay::model_changed);
 
     connect(toggle_impacts_action, &QAction::triggered,
-            field_display, &FieldDisplay::toggle_impacts);
+            field_display, &FieldDisplay::set_impacts);
 
     connect(set_xor_mode_action, &QAction::triggered,
             field_display, &FieldDisplay::set_XOR_mode);
 
     connect(set_replace_mode_action, &QAction::triggered,
             field_display, &FieldDisplay::set_replace_mode);
+}
+
+void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
+    std::unique_ptr<SignalNotifier> notifier(new SignalNotifier());
+    std::unique_ptr<LifeGameEngine> engine(new LifeGameEngine(cols, rows, notifier.get()));
+    std::unique_ptr<FieldDisplay> display(new FieldDisplay(engine.get(), cell_edge));
+    connect(notifier.get(), SIGNAL(notification()),
+            display.get(), SLOT(model_changed()));
+
+    set_model_and_view(std::move(notifier), std::move(engine), std::move(display));
 }
 
 bool MainWindow::load_field_from_file(const QString & file_name) {
@@ -434,18 +442,7 @@ bool MainWindow::load_field_from_file(const QString & file_name) {
                 throw std::runtime_error("Found garbage at end of file.");
             }
 
-            disconnect(toggle_impacts_action, SIGNAL(triggered()),
-                       field_display, SLOT(toggle_impacts()));
-            disconnect(signal_notifier.get(), SIGNAL(notification()),
-                       field_display, SLOT(model_changed()));
-
-            signal_notifier = std::move(notifier);
-            game_engine = std::move(engine);
-            field_display = display.release();
-            field_scroll_area->setWidget(field_display);
-
-            connect(toggle_impacts_action, SIGNAL(triggered()),
-                    field_display, SLOT(toggle_impacts()));
+            set_model_and_view(std::move(notifier), std::move(engine), std::move(display));
         }
     }
     catch (std::runtime_error & e) {

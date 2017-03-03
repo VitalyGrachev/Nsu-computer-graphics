@@ -13,6 +13,7 @@
 #include "field_display.h"
 #include "signal_notifier.h"
 #include "new_field_dialog.h"
+#include "options_dialog.h"
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
@@ -51,6 +52,10 @@ private:
     void create_new_field_dialog();
 
     void create_options_dialog();
+
+    void set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
+                            std::unique_ptr<LifeGameEngine> && engine,
+                            std::unique_ptr<FieldDisplay> && display);
 
     void connect_all();
 
@@ -92,7 +97,7 @@ private:
     QTimer * timer;
 
     NewFieldDialog * new_field_dialog;
-    QDialog * options_dialog;
+    OptionsDialog * options_dialog;
 
     bool is_running;
 
