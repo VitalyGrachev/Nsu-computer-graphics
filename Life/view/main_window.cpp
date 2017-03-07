@@ -8,14 +8,13 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
+#include <QScopedPointer>
 #include <QSpinBox>
 #include <QSlider>
 #include <QPushButton>
 
 MainWindow::MainWindow(QWidget * parent)
         : QMainWindow(parent),
-          signal_notifier(new SignalNotifier()),
-          game_engine(new LifeGameEngine(default_cols, default_rows, signal_notifier.get())),
           field_scroll_area(new QScrollArea(this)),
           timer(new QTimer(this)),
           is_running(false) {
@@ -23,8 +22,6 @@ MainWindow::MainWindow(QWidget * parent)
     create_actions();
     create_menus();
     create_toolbar();
-    create_new_field_dialog();
-    create_options_dialog();
 
     timer->setInterval(timer_interval_msec);
 
@@ -32,13 +29,14 @@ MainWindow::MainWindow(QWidget * parent)
 
     field_scroll_area->setVisible(true);
     field_scroll_area->setWidgetResizable(true);
-    field_display = new FieldDisplay(game_engine.get(), default_edge_size, this);
-    field_scroll_area->setWidget(field_display);
+
+    create_new_field(default_cols, default_rows, default_edge_size);
+
     field_scroll_area->setPalette(field_display->palette());
 
     connect_all();
 
-    setWindowTitle(tr("Life"));
+    setWindowTitle(tr("FIT_14202_Grachev_Life"));
     resize(800, 600);
 }
 
@@ -124,6 +122,8 @@ void MainWindow::create_toolbar() {
     toolbar->addAction(open_field_action);
     toolbar->addAction(save_field_action);
     toolbar->addSeparator();
+    toolbar->addAction(toggle_impacts_action);
+    toolbar->addSeparator();
     toolbar->addAction(clear_field_action);
 //    toolbar->addAction(set_options_action);
     toolbar->addSeparator();
@@ -140,16 +140,36 @@ void MainWindow::create_toolbar() {
     addToolBar(toolbar);
 }
 
-void MainWindow::create_new_field_dialog() {
-    new_field_dialog = new NewFieldDialog(min_cols, max_cols,
-                                          min_rows, max_rows,
-                                          min_edge_size, max_edge_size, this);
+QDialog * MainWindow::create_new_field_dialog() {
+
+    QDialog * new_field_dialog = new NewFieldDialog(min_cols, max_cols,
+                                                    game_engine->cols(),
+                                                    min_rows, max_rows,
+                                                    game_engine->rows(),
+                                                    min_edge_size, max_edge_size,
+                                                    field_display->get_cell_edge_size(),
+                                                    this);
     connect(new_field_dialog, SIGNAL(create_new_field(int, int, int)),
             this, SLOT(create_new_field(int, int, int)));
+    return new_field_dialog;
 }
 
-void MainWindow::create_options_dialog() {
+QDialog * MainWindow::create_options_dialog() {
+    return nullptr;
+}
 
+void MainWindow::connect_field_display() {
+    connect(field_display, &FieldDisplay::set_cell,
+            this, &MainWindow::set_cell);
+
+    connect(toggle_impacts_action, &QAction::triggered,
+            field_display, &FieldDisplay::set_impacts);
+
+    connect(set_xor_mode_action, &QAction::triggered,
+            field_display, &FieldDisplay::set_XOR_mode);
+
+    connect(set_replace_mode_action, &QAction::triggered,
+            field_display, &FieldDisplay::set_replace_mode);
 }
 
 void MainWindow::connect_all() {
@@ -172,27 +192,18 @@ void MainWindow::connect_all() {
     connect(show_about_action, &QAction::triggered,
             this, &MainWindow::show_about);
 
-    connect(field_display, &FieldDisplay::set_cell,
-            this, &MainWindow::set_cell);
-
-    connect(signal_notifier.get(), &SignalNotifier::notification,
-            field_display, &FieldDisplay::model_changed);
-
-    connect(toggle_impacts_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_impacts);
-
-    connect(set_xor_mode_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_XOR_mode);
-
-    connect(set_replace_mode_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_replace_mode);
-
     connect(timer, &QTimer::timeout,
             this, &MainWindow::next_step);
 }
 
 void MainWindow::new_field() {
+    QScopedPointer<QDialog> new_field_dialog(create_new_field_dialog());
     new_field_dialog->exec();
+}
+
+void MainWindow::show_options() {
+    QScopedPointer<QDialog> options_dialog(create_options_dialog());
+    options_dialog->exec();
 }
 
 void MainWindow::open_field() {
@@ -261,10 +272,6 @@ void MainWindow::clear_field() {
     game_engine->clear();
 }
 
-void MainWindow::show_options() {
-    options_dialog->exec();
-}
-
 void MainWindow::show_about() {
     QMessageBox::about(this, tr("About FIT_14202_Grachev_Life"),
                        tr("Life Version 1.0, NSU FIT 14202 Grachev"));
@@ -273,21 +280,6 @@ void MainWindow::show_about() {
 void MainWindow::set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
                                     std::unique_ptr<LifeGameEngine> && engine,
                                     std::unique_ptr<FieldDisplay> && display) {
-    disconnect(field_display, &FieldDisplay::set_cell,
-               this, &MainWindow::set_cell);
-
-    disconnect(signal_notifier.get(), &SignalNotifier::notification,
-               field_display, &FieldDisplay::model_changed);
-
-    disconnect(toggle_impacts_action, &QAction::triggered,
-               field_display, &FieldDisplay::set_impacts);
-
-    disconnect(set_xor_mode_action, &QAction::triggered,
-               field_display, &FieldDisplay::set_XOR_mode);
-
-    disconnect(set_replace_mode_action, &QAction::triggered,
-               field_display, &FieldDisplay::set_replace_mode);
-
     signal_notifier = std::move(notifier);
     game_engine = std::move(engine);
     field_display = display.release();
@@ -296,20 +288,7 @@ void MainWindow::set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
     toggle_impacts_action->setChecked(false);
     toggle_impacts_action->setEnabled(field_display->get_cell_edge_size() > HexGridCanvas::font_size);
 
-    connect(field_display, &FieldDisplay::set_cell,
-            this, &MainWindow::set_cell);
-
-    connect(signal_notifier.get(), &SignalNotifier::notification,
-            field_display, &FieldDisplay::model_changed);
-
-    connect(toggle_impacts_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_impacts);
-
-    connect(set_xor_mode_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_XOR_mode);
-
-    connect(set_replace_mode_action, &QAction::triggered,
-            field_display, &FieldDisplay::set_replace_mode);
+    connect_field_display();
 }
 
 void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
