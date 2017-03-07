@@ -39,6 +39,9 @@ public:
 
     const LifeImpactField & get_impact_field() const { return impact_field; }
 
+    uint32_t cols() const { return state_field.cols(); }
+    uint32_t rows() const { return state_field.rows(); }
+
 private:
     class PropagateImpact {
     public:
