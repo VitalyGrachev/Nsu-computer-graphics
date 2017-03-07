@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <stdexcept>
 
-const int BITS_IN_BYTE = 8;
-
 Canvas::Canvas(const QSize & size)
     : Canvas(size.width(), size.height()) {
 }
@@ -12,7 +10,6 @@ Canvas::Canvas(const QSize & size)
 Canvas::Canvas(int width, int height)
     : image(width, height, QImage::Format_RGB32),
       image_start(image.bits()),
-      image_bytes_per_line(image.depth() * image.width() / BITS_IN_BYTE),
       bytes_per_line(image.bytesPerLine()),
       width(image.width()),
       height(image.height()) {
@@ -60,10 +57,6 @@ void Canvas::draw_line_bresenham_unsafe(int x1, int y1, int x2, int y2, QRgb col
 void Canvas::fill(QRgb color) {
     uchar * image_end = image_start + image.byteCount();
     for(uchar * line_start = image_start; line_start < image_end; line_start += bytes_per_line) {
-//        QRgb * line_end = reinterpret_cast<QRgb*>(line_start + image_bytes_per_line);
-//        for(QRgb * pixel = reinterpret_cast<QRgb*>(line_start); pixel < line_end; ++pixel) {
-//            *pixel = color;
-//        }
         QRgb * line = reinterpret_cast<QRgb*>(line_start);
         for(int i = 0; i < width; ++i) {
             line[i] = color;
@@ -81,7 +74,6 @@ void Canvas::draw_vertical_line(int x, int y1, int y2, QRgb color) {
 
     QRgb * pixel = get_pixel_ptr_unsafe(x, y1);
     for(int y = y1; y <= y2; ++y) {
-        //        set_pixel_unsafe(x, y, color);
         *pixel = color;
         pixel = reinterpret_cast<QRgb*>(reinterpret_cast<uchar*>(pixel) + bytes_per_line);
     }
@@ -97,7 +89,6 @@ void Canvas::draw_horizontal_line(int x1, int x2, int y, QRgb color) {
 
     QRgb * pixel = get_pixel_ptr_unsafe(x1, y);
     for(int x = x1; x <= x2; ++x) {
-        //        set_pixel_unsafe(x, y, color);
         *(pixel++) = color;
     }
 }
