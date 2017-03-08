@@ -40,8 +40,11 @@ void LifeGameEngine::recalculate_impact_field() {
 }
 
 void LifeGameEngine::set_neighbour_impacts(double near_neighbour_impact, double far_neighbour_impact) {
-    propagate_impact = PropagateImpact(near_neighbour_impact, far_neighbour_impact);
-    recalculate_impact_field();
+    if (near_neighbour_impact != propagate_impact.get_near_neighbour_impact() ||
+        far_neighbour_impact != propagate_impact.get_far_neighbour_impact()) {
+        propagate_impact = PropagateImpact(near_neighbour_impact, far_neighbour_impact);
+        recalculate_impact_field();
+    }
 }
 
 bool LifeGameEngine::set_cell_fate_conditions(double birth_begin, double birth_end,
@@ -112,7 +115,7 @@ void LifeGameEngine::PropagateImpact::operator()(LifeImpactField & impact_field,
         const int nr = row + near_neighbour_row_shifts[i];
         if (impact_field.is_contained(nc, nr)) {
             impact_field[nr][nc] += sign * near_neighbour_impact;
-            if(impact_field[nr][nc] < eps) {
+            if (impact_field[nr][nc] < eps) {
                 impact_field[nr][nc] = 0.0;
             }
         }
@@ -121,7 +124,7 @@ void LifeGameEngine::PropagateImpact::operator()(LifeImpactField & impact_field,
         const int fr = row + far_neighbour_row_shifts[i];
         if (impact_field.is_contained(fc, fr)) {
             impact_field[fr][fc] += sign * far_neighbour_impact;
-            if(impact_field[fr][fc] < eps) {
+            if (impact_field[fr][fc] < eps) {
                 impact_field[fr][fc] = 0.0;
             }
         }
