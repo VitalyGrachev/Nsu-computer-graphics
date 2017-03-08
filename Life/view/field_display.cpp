@@ -136,9 +136,10 @@ void FieldDisplay::model_changed() {
     update();
 }
 
-void FieldDisplay::toggle_impacts() {
-    should_show_impacts = !should_show_impacts;
-    if (can_show_impacts) {
+void FieldDisplay::set_impacts(bool set_on) {
+    bool last_state = should_show_impacts;
+    should_show_impacts = set_on;
+    if (can_show_impacts && last_state != should_show_impacts) {
         redraw_all_cells();
         update();
     }

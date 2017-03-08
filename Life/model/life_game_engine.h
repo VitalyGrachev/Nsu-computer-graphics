@@ -39,6 +39,22 @@ public:
 
     const LifeImpactField & get_impact_field() const { return impact_field; }
 
+    uint32_t cols() const { return state_field.cols(); }
+
+    uint32_t rows() const { return state_field.rows(); }
+
+    double get_far_neighbour_impact() const;
+
+    double get_near_neighbour_impact() const;
+
+    double get_birth_begin() const;
+
+    double get_birth_end() const;
+
+    double get_live_begin() const;
+
+    double get_live_end() const;
+
 private:
     class PropagateImpact {
     public:
@@ -57,6 +73,10 @@ private:
         ~PropagateImpact() = default;
 
         void operator()(LifeImpactField & impact_field, int32_t col, uint32_t row, Action action) const;
+
+        double get_far_neighbour_impact() const { return far_neighbour_impact; }
+
+        double get_near_neighbour_impact() const { return near_neighbour_impact; }
 
     private:
         double near_neighbour_impact;
@@ -88,6 +108,14 @@ private:
 
         CellState next_state(CellState current_state, double cell_impact) const;
 
+        double get_birth_begin() const { return birth_begin; }
+
+        double get_birth_end() const { return birth_end; }
+
+        double get_live_begin() const { return live_begin; }
+
+        double get_live_end() const { return live_end; }
+
     private:
         double birth_begin;
         double birth_end;
@@ -103,5 +131,29 @@ private:
     CellFateDeterminant fate_determinant;
     PropagateImpact propagate_impact;
 };
+
+inline double LifeGameEngine::get_far_neighbour_impact() const {
+    return propagate_impact.get_far_neighbour_impact();
+}
+
+inline double LifeGameEngine::get_near_neighbour_impact() const {
+    return propagate_impact.get_near_neighbour_impact();
+}
+
+inline double LifeGameEngine::get_birth_begin() const {
+    return fate_determinant.get_birth_begin();
+}
+
+inline double LifeGameEngine::get_birth_end() const {
+    return fate_determinant.get_birth_end();
+}
+
+inline double LifeGameEngine::get_live_begin() const {
+    return fate_determinant.get_live_begin();
+}
+
+inline double LifeGameEngine::get_live_end() const {
+    return fate_determinant.get_live_end();
+}
 
 #endif //LIFE_GAME_ENGINE_H

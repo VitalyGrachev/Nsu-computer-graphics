@@ -3,6 +3,7 @@
 
 #include <QAction>
 #include <QActionGroup>
+#include <QCloseEvent>
 #include <QDialog>
 #include <QMainWindow>
 #include <QTimer>
@@ -12,12 +13,16 @@
 
 #include "field_display.h"
 #include "signal_notifier.h"
-#include "new_field_dialog.h"
+#include "dialogs/new_field_dialog.h"
+#include "dialogs/options_dialog.h"
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
 public:
     explicit MainWindow(QWidget * parent = 0);
+
+protected:
+    void closeEvent(QCloseEvent * event) override;
 
 private slots:
 
@@ -39,6 +44,11 @@ private slots:
 
     void show_about();
 
+    void set_options(int cols, int rows, int cell_edge,
+                     double live_begin, double live_end,
+                     double birth_begin, double birth_end,
+                     double first_impact, double second_impact);
+
     void create_new_field(int cols, int rows, int cell_edge);
 
 private:
@@ -48,9 +58,25 @@ private:
 
     void create_toolbar();
 
-    void create_new_field_dialog();
+    bool maybe_save();
 
-    void create_options_dialog();
+    bool save();
+
+    RulesGroupBox * create_rules_group_box();
+
+    CellSizeGroupBox * create_cell_size_group_box();
+
+    FieldSizeGroupBox * create_field_size_group_box();
+
+    QDialog * create_new_field_dialog();
+
+    QDialog * create_options_dialog();
+
+    void set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
+                            std::unique_ptr<LifeGameEngine> && engine,
+                            std::unique_ptr<FieldDisplay> && display);
+
+    void connect_field_display();
 
     void connect_all();
 
@@ -60,7 +86,7 @@ private:
 
     bool load_field_from_file(const QString & file_name);
 
-    void save_field_to_file(const QString & file_name);
+    bool save_field_to_file(const QString & file_name);
 
     std::unique_ptr<SignalNotifier> signal_notifier;
     std::unique_ptr<LifeGameEngine> game_engine;
@@ -91,10 +117,8 @@ private:
 
     QTimer * timer;
 
-    NewFieldDialog * new_field_dialog;
-    QDialog * options_dialog;
-
     bool is_running;
+    bool is_modified;
 
     static const uint32_t default_cols = 16;
     static const uint32_t default_rows = 16;

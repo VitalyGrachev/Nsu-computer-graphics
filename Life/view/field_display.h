@@ -26,7 +26,7 @@ public slots:
 
     void model_changed();
 
-    void toggle_impacts();
+    void set_impacts(bool set_on);
 
     void set_XOR_mode();
 

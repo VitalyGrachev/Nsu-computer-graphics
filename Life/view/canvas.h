@@ -28,7 +28,6 @@ protected:
     QImage image;
 private:
     uchar * image_start;
-    int image_bytes_per_line;
     int bytes_per_line;
     int width;
     int height;
