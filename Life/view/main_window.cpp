@@ -1,18 +1,11 @@
 #include "main_window.h"
 
-#include <algorithm>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
 #include <QScopedPointer>
-#include <QSpinBox>
-#include <QSlider>
-#include <QPushButton>
 
 MainWindow::MainWindow(QWidget * parent)
         : QMainWindow(parent),
@@ -90,15 +83,14 @@ void MainWindow::create_menus() {
     file_menu->addAction(open_field_action);
     file_menu->addAction(save_field_action);
 
-    edit_menu = new QMenu(tr("&Edit"), this);
-    edit_menu->addAction(clear_field_action);
-    edit_menu->addAction(set_options_action);
-
     QMenu * mode_menu = new QMenu(tr("Mode"), this);
     mode_menu->addAction(set_replace_mode_action);
     mode_menu->addAction(set_xor_mode_action);
 
+    edit_menu = new QMenu(tr("&Edit"), this);
+    edit_menu->addAction(clear_field_action);
     edit_menu->addMenu(mode_menu);
+    edit_menu->addAction(set_options_action);
 
     view_menu = new QMenu(tr("&View"), this);
     view_menu->addAction(toggle_impacts_action);
