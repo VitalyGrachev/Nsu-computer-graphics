@@ -40,6 +40,11 @@ private slots:
 
     void show_about();
 
+    void set_options(int cols, int rows, int cell_edge,
+                     double live_begin, double live_end,
+                     double birth_begin, double birth_end,
+                     double first_impact, double second_impact);
+
     void create_new_field(int cols, int rows, int cell_edge);
 
 private:
@@ -48,6 +53,12 @@ private:
     void create_menus();
 
     void create_toolbar();
+
+    RulesGroupBox * create_rules_group_box();
+
+    CellSizeGroupBox * create_cell_size_group_box();
+
+    FieldSizeGroupBox * create_field_size_group_box();
 
     QDialog * create_new_field_dialog();
 

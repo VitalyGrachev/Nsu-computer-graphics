@@ -1,5 +1,6 @@
 #include "main_window.h"
 
+#include <algorithm>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -91,7 +92,7 @@ void MainWindow::create_menus() {
 
     edit_menu = new QMenu(tr("&Edit"), this);
     edit_menu->addAction(clear_field_action);
-//    edit_menu->addAction(set_options_action);
+    edit_menu->addAction(set_options_action);
 
     QMenu * mode_menu = new QMenu(tr("Mode"), this);
     mode_menu->addAction(set_replace_mode_action);
@@ -125,7 +126,7 @@ void MainWindow::create_toolbar() {
     toolbar->addAction(toggle_impacts_action);
     toolbar->addSeparator();
     toolbar->addAction(clear_field_action);
-//    toolbar->addAction(set_options_action);
+    toolbar->addAction(set_options_action);
     toolbar->addSeparator();
     toolbar->addAction(set_replace_mode_action);
     toolbar->addAction(set_xor_mode_action);
@@ -140,22 +141,44 @@ void MainWindow::create_toolbar() {
     addToolBar(toolbar);
 }
 
-QDialog * MainWindow::create_new_field_dialog() {
+RulesGroupBox * MainWindow::create_rules_group_box() {
+    LifeGameEngine & lge = *game_engine;
+    RulesGroupBox * rules_group_box = new RulesGroupBox(lge.get_live_begin(), lge.get_live_end(),
+                                                        lge.get_birth_begin(), lge.get_birth_end(),
+                                                        lge.get_near_neighbour_impact(),
+                                                        lge.get_far_neighbour_impact(), this);
+    return rules_group_box;
+}
 
-    QDialog * new_field_dialog = new NewFieldDialog(min_cols, max_cols,
-                                                    game_engine->cols(),
-                                                    min_rows, max_rows,
-                                                    game_engine->rows(),
-                                                    min_edge_size, max_edge_size,
-                                                    field_display->get_cell_edge_size(),
-                                                    this);
-    connect(new_field_dialog, SIGNAL(create_new_field(int, int, int)),
-            this, SLOT(create_new_field(int, int, int)));
+CellSizeGroupBox * MainWindow::create_cell_size_group_box() {
+    CellSizeGroupBox * cell_size_group_box = new CellSizeGroupBox(field_display->get_cell_edge_size(),
+                                                                  min_edge_size, max_edge_size, this);
+    return cell_size_group_box;
+}
+
+FieldSizeGroupBox * MainWindow::create_field_size_group_box() {
+    FieldSizeGroupBox * field_size_group_box = new FieldSizeGroupBox(game_engine->cols(),
+                                                                     game_engine->rows(),
+                                                                     min_cols, max_cols,
+                                                                     min_rows, max_rows, this);
+    return field_size_group_box;
+}
+
+QDialog * MainWindow::create_new_field_dialog() {
+    NewFieldDialog * new_field_dialog = new NewFieldDialog(create_field_size_group_box(),
+                                                           create_cell_size_group_box());
+    connect(new_field_dialog, &NewFieldDialog::create_new_field,
+            this, &MainWindow::create_new_field);
     return new_field_dialog;
 }
 
 QDialog * MainWindow::create_options_dialog() {
-    return nullptr;
+    OptionsDialog * options_dialog = new OptionsDialog(create_field_size_group_box(),
+                                                       create_cell_size_group_box(),
+                                                       create_rules_group_box());
+    connect(options_dialog, &OptionsDialog::set_options,
+            this, &MainWindow::set_options);
+    return options_dialog;
 }
 
 void MainWindow::connect_field_display() {
@@ -186,8 +209,8 @@ void MainWindow::connect_all() {
             this, &MainWindow::toggle_run);
     connect(clear_field_action, &QAction::triggered,
             this, &MainWindow::clear_field);
-//    connect(set_options_action, &QAction::triggered,
-//            this, &MainWindow::show_options);
+    connect(set_options_action, &QAction::triggered,
+            this, &MainWindow::show_options);
 
     connect(show_about_action, &QAction::triggered,
             this, &MainWindow::show_about);
@@ -277,6 +300,41 @@ void MainWindow::show_about() {
                        tr("Life Version 1.0, NSU FIT 14202 Grachev"));
 }
 
+void MainWindow::set_options(int cols, int rows,
+                             int cell_edge,
+                             double live_begin, double live_end,
+                             double birth_begin, double birth_end,
+                             double first_impact, double second_impact) {
+    if (cols != game_engine->cols() || rows != game_engine->rows()) {
+        std::unique_ptr<SignalNotifier> notifier(new SignalNotifier());
+        std::unique_ptr<LifeGameEngine> engine(new LifeGameEngine(cols, rows, notifier.get()));
+        std::unique_ptr<FieldDisplay> display(new FieldDisplay(engine.get(), cell_edge));
+        connect(notifier.get(), SIGNAL(notification()),
+                display.get(), SLOT(model_changed()));
+
+        uint32_t min_cols = std::min(static_cast<uint32_t>(cols), game_engine->cols());
+        uint32_t min_rows = std::min(static_cast<uint32_t>(rows), game_engine->rows());
+
+        const LifeStateField & states = game_engine->get_state_field();
+        for (uint32_t r = 0; r < min_rows; ++r) {
+            for (uint32_t c = 0; c < min_cols; ++c) {
+                if (states[r][c] == LifeStateField::ALIVE) {
+                    engine->set_cell(c, r);
+                }
+            }
+        }
+        set_model_and_view(std::move(notifier), std::move(engine), std::move(display));
+    } else if (cell_edge != field_display->get_cell_edge_size()) {
+        std::unique_ptr<FieldDisplay> display(new FieldDisplay(game_engine.get(), cell_edge));
+        connect(signal_notifier.get(), SIGNAL(notification()),
+                display.get(), SLOT(model_changed()));
+        set_model_and_view(std::move(signal_notifier), std::move(game_engine), std::move(display));
+    }
+
+    game_engine->set_neighbour_impacts(first_impact, second_impact);
+    game_engine->set_cell_fate_conditions(birth_begin, birth_end, live_begin, live_end);
+}
+
 void MainWindow::set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
                                     std::unique_ptr<LifeGameEngine> && engine,
                                     std::unique_ptr<FieldDisplay> && display) {
@@ -292,13 +350,17 @@ void MainWindow::set_model_and_view(std::unique_ptr<SignalNotifier> && notifier,
 }
 
 void MainWindow::create_new_field(int cols, int rows, int cell_edge) {
-    std::unique_ptr<SignalNotifier> notifier(new SignalNotifier());
-    std::unique_ptr<LifeGameEngine> engine(new LifeGameEngine(cols, rows, notifier.get()));
-    std::unique_ptr<FieldDisplay> display(new FieldDisplay(engine.get(), cell_edge));
-    connect(notifier.get(), SIGNAL(notification()),
-            display.get(), SLOT(model_changed()));
-
-    set_model_and_view(std::move(notifier), std::move(engine), std::move(display));
+    try {
+        std::unique_ptr<SignalNotifier> notifier(new SignalNotifier());
+        std::unique_ptr<LifeGameEngine> engine(new LifeGameEngine(cols, rows, notifier.get()));
+        std::unique_ptr<FieldDisplay> display(new FieldDisplay(engine.get(), cell_edge));
+        connect(notifier.get(), SIGNAL(notification()),
+                display.get(), SLOT(model_changed()));
+        set_model_and_view(std::move(notifier), std::move(engine), std::move(display));
+    } catch (std::bad_alloc & e) {
+        QMessageBox::warning(this, tr("Not enough memory"),
+                             tr("Not enough memory to fit this field."));
+    }
 }
 
 bool MainWindow::load_field_from_file(const QString & file_name) {
