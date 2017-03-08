@@ -21,7 +21,11 @@ SOURCES += main.cpp \
     model/life_field.cc \
     model/life_game_engine.cc \
     model/life_impacts.cc \
-    view/new_field_dialog.cc
+    view/dialogs/cell_size_group_box.cc \
+    view/dialogs/field_size_group_box.cc \
+    view/dialogs/new_field_dialog.cc \
+    view/dialogs/options_dialog.cc \
+    view/dialogs/rules_group_box.cc
 
 HEADERS  += mainwindow.h \
     view/field_display.h \
@@ -34,4 +38,8 @@ HEADERS  += mainwindow.h \
     model/abstract_notifier.h \
     model/life_impacts.h \
     view/mode.h \
-    view/new_field_dialog.h
+    view/dialogs/cell_size_group_box.h \
+    view/dialogs/field_size_group_box.h \
+    view/dialogs/new_field_dialog.h \
+    view/dialogs/options_dialog.h \
+    view/dialogs/rules_group_box.h

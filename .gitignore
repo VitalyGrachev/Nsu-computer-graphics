@@ -51,7 +51,6 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
-CMakeLists.*
 
 #CLion
 .idea
