@@ -3,6 +3,7 @@
 
 #include <QAction>
 #include <QActionGroup>
+#include <QCloseEvent>
 #include <QDialog>
 #include <QMainWindow>
 #include <QTimer>
@@ -19,6 +20,9 @@ class MainWindow : public QMainWindow {
 Q_OBJECT
 public:
     explicit MainWindow(QWidget * parent = 0);
+
+protected:
+    void closeEvent(QCloseEvent * event) override;
 
 private slots:
 
@@ -54,6 +58,10 @@ private:
 
     void create_toolbar();
 
+    bool maybe_save();
+
+    bool save();
+
     RulesGroupBox * create_rules_group_box();
 
     CellSizeGroupBox * create_cell_size_group_box();
@@ -78,7 +86,7 @@ private:
 
     bool load_field_from_file(const QString & file_name);
 
-    void save_field_to_file(const QString & file_name);
+    bool save_field_to_file(const QString & file_name);
 
     std::unique_ptr<SignalNotifier> signal_notifier;
     std::unique_ptr<LifeGameEngine> game_engine;
@@ -110,6 +118,7 @@ private:
     QTimer * timer;
 
     bool is_running;
+    bool is_modified;
 
     static const uint32_t default_cols = 16;
     static const uint32_t default_rows = 16;

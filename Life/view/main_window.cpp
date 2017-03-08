@@ -11,7 +11,8 @@ MainWindow::MainWindow(QWidget * parent)
         : QMainWindow(parent),
           field_scroll_area(new QScrollArea(this)),
           timer(new QTimer(this)),
-          is_running(false) {
+          is_running(false),
+          is_modified(false) {
 
     create_actions();
     create_menus();
@@ -212,8 +213,11 @@ void MainWindow::connect_all() {
 }
 
 void MainWindow::new_field() {
-    QScopedPointer<QDialog> new_field_dialog(create_new_field_dialog());
-    new_field_dialog->exec();
+    if (maybe_save()) {
+        QScopedPointer<QDialog> new_field_dialog(create_new_field_dialog());
+        new_field_dialog->exec();
+        is_modified = false;
+    }
 }
 
 void MainWindow::show_options() {
@@ -222,14 +226,17 @@ void MainWindow::show_options() {
 }
 
 void MainWindow::open_field() {
-    QString file_name = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                     "../FIT_14202_Grachev_Life_Data",
-                                                     "GameOfLife(*.txt);;All files(*.*)");
-    if (!file_name.isEmpty()) {
-        if (is_running) {
-            stop_timer();
+    if (maybe_save()) {
+        QString file_name = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                         "../FIT_14202_Grachev_Life_Data/",
+                                                         "GameOfLife(*.txt);;All files(*.*)");
+        if (!file_name.isEmpty()) {
+            if (is_running) {
+                stop_timer();
+            }
+            load_field_from_file(file_name);
+            is_modified = false;
         }
-        load_field_from_file(file_name);
     }
 }
 
@@ -238,29 +245,40 @@ void MainWindow::save_field() {
     if (is_running) {
         stop_timer();
     }
-    QString file_name = QFileDialog::getSaveFileName(this, tr("Save File"),
-                                                     "../FIT_14202_Grachev_Life_Data",
-                                                     "GameOfLife(*.txt);;All files(*.*)");
-    if (!file_name.isEmpty()) {
-        save_field_to_file(file_name);
-    }
+    save();
     if (was_running) {
         start_timer();
     }
 }
 
+bool MainWindow::save() {
+    QString file_name = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                     "../FIT_14202_Grachev_Life_Data/",
+                                                     "GameOfLife(*.txt);;All files(*.*)");
+    if (!file_name.isEmpty()) {
+        if (save_field_to_file(file_name)) {
+            is_modified = false;
+            return true;
+        }
+    }
+    return false;
+}
+
 void MainWindow::set_cell(uint32_t col, uint32_t row, CellState state) {
     if (!is_running) {
         game_engine->set_cell(col, row, state);
+        is_modified = true;
     }
 }
 
 void MainWindow::next_step() {
     game_engine->next_step();
+    is_modified = true;
 }
 
 void MainWindow::start_timer() {
     is_running = true;
+    is_modified = true;
     run_action->setChecked(true);
     clear_field_action->setEnabled(false);
     next_step_action->setEnabled(false);
@@ -285,6 +303,7 @@ void MainWindow::toggle_run() {
 
 void MainWindow::clear_field() {
     game_engine->clear();
+    is_modified = true;
 }
 
 void MainWindow::show_about() {
@@ -316,6 +335,7 @@ void MainWindow::set_options(int cols, int rows,
             }
         }
         set_model_and_view(std::move(notifier), std::move(engine), std::move(display));
+        is_modified = true;
     } else if (cell_edge != field_display->get_cell_edge_size()) {
         std::unique_ptr<FieldDisplay> display(new FieldDisplay(game_engine.get(), cell_edge));
         connect(signal_notifier.get(), SIGNAL(notification()),
@@ -491,7 +511,7 @@ bool MainWindow::load_field_from_file(const QString & file_name) {
     return true;
 }
 
-void MainWindow::save_field_to_file(const QString & file_name) {
+bool MainWindow::save_field_to_file(const QString & file_name) {
     QFile file(file_name);
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -512,5 +532,32 @@ void MainWindow::save_field_to_file(const QString & file_name) {
     } else {
         QMessageBox::warning(this, tr("Cannot save file."),
                              tr("File cannot be saved: file cannot be opened."));
+        return false;
+    }
+    return true;
+}
+
+bool MainWindow::maybe_save() {
+    if (is_modified) {
+        QMessageBox::StandardButton ret;
+        ret = QMessageBox::warning(this, tr("FIT_14202_Grachev_Life"),
+                                   tr("The field has been modified.\n"
+                                              "Do you want to save your changes?"),
+                                   QMessageBox::Save | QMessageBox::Discard
+                                   | QMessageBox::Cancel);
+        if (ret == QMessageBox::Save) { ;
+            return save();
+        } else if (ret == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void MainWindow::closeEvent(QCloseEvent * event) {
+    if (maybe_save()) {
+        event->accept();
+    } else {
+        event->ignore();
     }
 }
