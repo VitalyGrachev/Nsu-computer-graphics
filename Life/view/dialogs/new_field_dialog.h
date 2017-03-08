@@ -8,9 +8,8 @@
 class NewFieldDialog : public QDialog {
 Q_OBJECT
 public:
-    NewFieldDialog(uint32_t min_cols, uint32_t max_cols, uint32_t act_cols,
-                   uint32_t min_rows, uint32_t max_rows, uint32_t act_rows,
-                   uint32_t min_edge_size, uint32_t max_edge_size, uint32_t act_edge_size,
+    NewFieldDialog(FieldSizeGroupBox * field_size_group_box,
+                   CellSizeGroupBox * cell_size_group_box,
                    QWidget * parent = nullptr);
 
 signals:
