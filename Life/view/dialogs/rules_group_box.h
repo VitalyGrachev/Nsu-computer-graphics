@@ -5,6 +5,7 @@
 #include <QDoubleSpinBox>
 
 class RulesGroupBox : public QGroupBox {
+Q_OBJECT
 public:
     RulesGroupBox(double live_begin, double live_end,
                   double birth_begin, double birth_end,
@@ -22,6 +23,16 @@ public:
     double get_live_begin() const { return live_begin_spin->value(); }
 
     double get_live_end() const { return live_end_spin->value(); }
+
+private slots:
+
+    void birth_begin_changed(double new_value);
+
+    void birth_end_changed(double new_value);
+
+    void live_begin_changed(double new_value);
+
+    void live_end_changed(double new_value);
 
 private:
     QDoubleSpinBox * first_impact_spin;

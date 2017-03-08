@@ -10,62 +10,96 @@ RulesGroupBox::RulesGroupBox(double live_begin, double live_end,
                              QWidget * parent)
         : QGroupBox(tr("Rules"), parent) {
 
+    QLabel * first_impact_label = new QLabel(tr("First impact:"), this);
+    QLabel * second_impact_label = new QLabel(tr("Second impact:"), this);
+    QLabel * live_begin_label = new QLabel(tr("Live begin:"), this);
+    QLabel * birth_begin_label = new QLabel(tr("Birth begin:"), this);
+    QLabel * birth_end_label = new QLabel(tr("Birth end:"), this);
+    QLabel * live_end_label = new QLabel(tr("Live end:"), this);
+
     first_impact_spin = new QDoubleSpinBox(this);
     first_impact_spin->setValue(first_impact);
-    QLabel * first_impact_label = new QLabel(tr("First impact:"), this);
-    QHBoxLayout * first_impact_layout = new QHBoxLayout();
-    first_impact_layout->addWidget(first_impact_label);
-    first_impact_layout->addStretch();
-    first_impact_layout->addWidget(first_impact_spin);
+    first_impact_spin->setSingleStep(0.1);
+    first_impact_spin->setDecimals(1);
 
     second_impact_spin = new QDoubleSpinBox(this);
     second_impact_spin->setValue(second_impact);
-    QLabel * second_impact_label = new QLabel(tr("Second impact:"), this);
-    QHBoxLayout * second_impact_layout = new QHBoxLayout();
-    second_impact_layout->addWidget(second_impact_label);
-    second_impact_layout->addStretch();
-    second_impact_layout->addWidget(second_impact_spin);
-
-    birth_begin_spin = new QDoubleSpinBox(this);
-    birth_begin_spin->setValue(birth_begin);
-    QLabel * birth_begin_label = new QLabel(tr("Birth begin:"), this);
-    QHBoxLayout * birth_begin_layout = new QHBoxLayout();
-    birth_begin_layout->addWidget(birth_begin_label);
-    birth_begin_layout->addStretch();
-    birth_begin_layout->addWidget(birth_begin_spin);
-
-    birth_end_spin = new QDoubleSpinBox(this);
-    birth_end_spin->setValue(birth_end);
-    QLabel * birth_end_label = new QLabel(tr("Birth end:"), this);
-    QHBoxLayout * birth_end_layout = new QHBoxLayout();
-    birth_end_layout->addWidget(birth_end_label);
-    birth_end_layout->addStretch();
-    birth_end_layout->addWidget(birth_end_spin);
+    second_impact_spin->setSingleStep(0.1);
+    second_impact_spin->setDecimals(1);
 
     live_begin_spin = new QDoubleSpinBox(this);
     live_begin_spin->setValue(live_begin);
-    QLabel * live_begin_label = new QLabel(tr("Live begin:"), this);
-    QHBoxLayout * live_begin_layout = new QHBoxLayout();
-    live_begin_layout->addWidget(live_begin_label);
-    live_begin_layout->addStretch();
-    live_begin_layout->addWidget(live_begin_spin);
+    live_begin_spin->setSingleStep(0.1);
+    live_begin_spin->setDecimals(1);
+    live_begin_spin->setMinimum(0);
+    live_begin_spin->setMaximum(birth_begin);
+    connect(live_begin_spin, SIGNAL(valueChanged(double)),
+            this, SLOT(live_begin_changed(double)));
+
+    birth_begin_spin = new QDoubleSpinBox(this);
+    birth_begin_spin->setValue(birth_begin);
+    birth_begin_spin->setSingleStep(0.1);
+    birth_begin_spin->setDecimals(1);
+    birth_begin_spin->setMinimum(live_begin);
+    birth_begin_spin->setMaximum(birth_end);
+    connect(birth_begin_spin, SIGNAL(valueChanged(double)),
+            this, SLOT(birth_begin_changed(double)));
+
+    birth_end_spin = new QDoubleSpinBox(this);
+    birth_end_spin->setValue(birth_end);
+    birth_end_spin->setSingleStep(0.1);
+    birth_end_spin->setDecimals(1);
+    birth_end_spin->setMinimum(birth_begin);
+    birth_end_spin->setMaximum(live_end);
+    connect(birth_end_spin, SIGNAL(valueChanged(double)),
+            this, SLOT(birth_end_changed(double)));
 
     live_end_spin = new QDoubleSpinBox(this);
     live_end_spin->setValue(live_end);
-    QLabel * live_end_label = new QLabel(tr("Live end:"), this);
-    QHBoxLayout * live_end_layout = new QHBoxLayout();
-    live_end_layout->addWidget(live_end_label);
-    live_end_layout->addStretch();
-    live_end_layout->addWidget(live_end_spin);
+    live_end_spin->setSingleStep(0.1);
+    live_end_spin->setDecimals(1);
+    live_end_spin->setMinimum(birth_end);
+    connect(live_end_spin, SIGNAL(valueChanged(double)),
+            this, SLOT(live_end_changed(double)));
 
-    QVBoxLayout * group_box_layout = new QVBoxLayout();
-    group_box_layout->addLayout(first_impact_layout);
-    group_box_layout->addLayout(second_impact_layout);
-    group_box_layout->addLayout(birth_begin_layout);
-    group_box_layout->addLayout(birth_end_layout);
-    group_box_layout->addLayout(live_begin_layout);
-    group_box_layout->addLayout(live_end_layout);
+    QVBoxLayout * labels_layout = new QVBoxLayout();
+    labels_layout->addWidget(first_impact_label);
+    labels_layout->addWidget(second_impact_label);
+    labels_layout->addWidget(live_begin_label);
+    labels_layout->addWidget(birth_begin_label);
+    labels_layout->addWidget(birth_end_label);
+    labels_layout->addWidget(live_end_label);
+
+    QVBoxLayout * spin_boxes_layout = new QVBoxLayout();
+    spin_boxes_layout->addWidget(first_impact_spin);
+    spin_boxes_layout->addWidget(second_impact_spin);
+    spin_boxes_layout->addWidget(live_begin_spin);
+    spin_boxes_layout->addWidget(birth_begin_spin);
+    spin_boxes_layout->addWidget(birth_end_spin);
+    spin_boxes_layout->addWidget(live_end_spin);
+
+    QHBoxLayout * group_box_layout = new QHBoxLayout();
+    group_box_layout->addLayout(labels_layout);
+    group_box_layout->addLayout(spin_boxes_layout);
 
     setLayout(group_box_layout);
+}
+
+void RulesGroupBox::birth_begin_changed(double new_value) {
+    live_begin_spin->setMaximum(new_value);
+    birth_end_spin->setMinimum(new_value);
+}
+
+void RulesGroupBox::birth_end_changed(double new_value) {
+    birth_begin_spin->setMaximum(new_value);
+    live_end_spin->setMinimum(new_value);
+}
+
+void RulesGroupBox::live_begin_changed(double new_value) {
+    birth_begin_spin->setMinimum(new_value);
+}
+
+void RulesGroupBox::live_end_changed(double new_value) {
+    birth_end_spin->setMaximum(new_value);
 }
 
