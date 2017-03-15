@@ -1,6 +1,6 @@
-#include "image_handler.h"
+#include "image_wrapper.h"
 
-bool ImageHandler::texture_lookup(float u, float v, RGB888 * output_color) {
+bool ImageWrapper::texture_lookup(float u, float v, RGB888 * output_color) {
     const int iu = static_cast<int>(u);
     const int iv = static_cast<int>(v);
 
