@@ -4,8 +4,14 @@
 #include <QImage>
 #include "rgb888.h"
 
+enum class LineType : char {
+    SOLID, DOTTED
+};
+
 class ImageWrapper {
 public:
+    ImageWrapper();
+
     ImageWrapper(const QImage & image);
 
     ImageWrapper(const ImageWrapper &) = default;
@@ -24,13 +30,32 @@ public:
 
     const RGB888 & operator()(int x, int y) const;
 
+    int width() const { return image.width(); }
+
+    int height() const { return image.height(); }
+
     bool texture_lookup(float u, float v, RGB888 * output_color);
 
-    QImage & get_image() { return image; }
+    QImage & to_QImage() { return image; }
 
-    const QImage & get_image() const { return image; }
+    const QImage & to_QImage() const { return image; }
+
+    void fill(const RGB888 & color);
+
+    void fill(const QRect & rect, const RGB888 & color);
+
+    void draw_line(int x1, int y1, int x2, int y2,
+                   const RGB888 & color, LineType type = LineType::DOTTED);
+
+    void insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y);
 
 private:
+    void draw_horizontal_line(int x1, int x2, int y,
+                              const RGB888 & color, LineType type);
+
+    void draw_vertical_line(int x, int y1, int y2,
+                            const RGB888 & color, LineType line_type);
+
     QImage image;
 };
 
