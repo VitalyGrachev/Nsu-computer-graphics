@@ -2,7 +2,7 @@
 #define IMAGE_WRAPPER_H
 
 #include <QImage>
-#include "rgb888.h"
+#include "QRgb.h"
 
 enum class LineType : char {
     SOLID, DOTTED
@@ -26,35 +26,35 @@ public:
 
     bool contains(int x, int y) const;
 
-    RGB888 & operator()(int x, int y);
+    QRgb & operator()(int x, int y);
 
-    const RGB888 & operator()(int x, int y) const;
+    const QRgb & operator()(int x, int y) const;
 
     int width() const { return image.width(); }
 
     int height() const { return image.height(); }
 
-    bool texture_lookup(float u, float v, RGB888 * output_color);
+    bool texture_lookup(float u, float v, QRgb * output_color);
 
     QImage & to_QImage() { return image; }
 
     const QImage & to_QImage() const { return image; }
 
-    void fill(const RGB888 & color);
+    void fill(const QRgb & color);
 
-    void fill(const QRect & rect, const RGB888 & color);
+    void fill(const QRect & rect, const QRgb & color);
 
     void draw_line(int x1, int y1, int x2, int y2,
-                   const RGB888 & color, LineType type = LineType::DOTTED);
+                   const QRgb & color, LineType type = LineType::DOTTED);
 
     void insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y);
 
 private:
     void draw_horizontal_line(int x1, int x2, int y,
-                              const RGB888 & color, LineType type);
+                              const QRgb & color, LineType type);
 
     void draw_vertical_line(int x, int y1, int y2,
-                            const RGB888 & color, LineType line_type);
+                            const QRgb & color, LineType line_type);
 
     QImage image;
 };
@@ -63,13 +63,13 @@ inline bool ImageWrapper::contains(int x, int y) const {
     return x >= 0 && y >= 0 && x < image.width() && y < image.height();
 }
 
-inline RGB888 & ImageWrapper::operator()(int x, int y) {
-    RGB888 * line = reinterpret_cast<RGB888 *>(image.bits() + y * image.bytesPerLine());
+inline QRgb & ImageWrapper::operator()(int x, int y) {
+    QRgb * line = reinterpret_cast<QRgb *>(image.bits() + y * image.bytesPerLine());
     return *(line + x);
 }
 
-inline const RGB888 & ImageWrapper::operator()(int x, int y) const {
-    const RGB888 * line = reinterpret_cast<const RGB888 *>(image.bits() + y * image.bytesPerLine());
+inline const QRgb & ImageWrapper::operator()(int x, int y) const {
+    const QRgb * line = reinterpret_cast<const QRgb *>(image.bits() + y * image.bytesPerLine());
     return *(line + x);
 }
 
