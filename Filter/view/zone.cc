@@ -7,7 +7,7 @@ const QRgb Zone::background_color = QColor(255, 255, 255).rgb();
 
 Zone::Zone(int width, int height, QWidget * parent)
         : QWidget(parent),
-          shown_image(QImage(width + 2, height + 2, QImage::Format_ARGB32)),
+          shown_image(width + 2, height + 2),
           width(width),
           height(height) {
     shown_image.draw_line(0, 0, width + 1, 0, border_color);
