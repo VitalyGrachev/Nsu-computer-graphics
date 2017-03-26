@@ -7,9 +7,25 @@ enum class LineType : char {
     SOLID, DOTTED
 };
 
+union RGBA32 {
+    QRgb qrgb;
+    uint8_t a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+
+    RGBA32() = default;
+
+    RGBA32(const QRgb & qrgb) : qrgb(qrgb) {}
+
+    RGBA32(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+};
+
 class ImageWrapper {
 public:
     ImageWrapper();
+
+    ImageWrapper(int width, int height);
 
     ImageWrapper(const QImage & image);
 

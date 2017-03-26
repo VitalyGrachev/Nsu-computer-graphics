@@ -24,29 +24,16 @@ private:
     uint8_t state;
 };
 
-union RGBA32 {
-    QRgb rgb;
-    uint8_t a;
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-
-    RGBA32() = default;
-
-    RGBA32(const QRgb & rgb) : rgb(rgb) {}
-
-    RGBA32(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
-};
-
 }
 
 ImageWrapper::ImageWrapper()
-        : image(0, 0, QImage::Format_Invalid) {
-}
+        : image(0, 0, QImage::Format_Invalid) {}
+
+ImageWrapper::ImageWrapper(int width, int height)
+        : image(width, height, QImage::Format_ARGB32) {}
 
 ImageWrapper::ImageWrapper(const QImage & image)
-        : image(image) {
-}
+        : image(image) {}
 
 void ImageWrapper::swap(ImageWrapper & other) {
     image.swap(other.image);
@@ -78,7 +65,7 @@ bool ImageWrapper::texture_lookup(float u, float v, QRgb * output_color) {
     result.a = fv * (fu * lt.a + (1.0f - fu) * rt.a) +
                (1.0f - fv) * (fu * lb.a + (1.0f - fu) * rb.a);
 
-    *(output_color) = result.rgb;
+    *(output_color) = result.qrgb;
     return true;
 }
 
