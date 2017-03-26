@@ -6,7 +6,7 @@
 template<class ID, class PRODUCT>
 class Factory {
 public:
-    Factory & instance();
+    static Factory & instance();
 
     PRODUCT * create(const ID & id);
 
