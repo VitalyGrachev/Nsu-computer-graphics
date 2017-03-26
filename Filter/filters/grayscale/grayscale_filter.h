@@ -5,11 +5,12 @@
 
 class GrayScaleFilter : public AbstractFilter {
 public:
-    GrayScaleFilter() = default;
-
-    virtual ~GrayScaleFilter() {}
-
     ImageWrapper operator()(const ImageWrapper & input) override;
+
+private:
+    const float red_coeff;
+    const float green_coeff;
+    const float blue_coeff;
 };
 
 
