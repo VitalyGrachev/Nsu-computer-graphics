@@ -1,8 +1,8 @@
 #include "grayscale_filter.h"
 
-float GrayScaleFilter::red_coeff = 0.2126f;
-float GrayScaleFilter::green_coeff = 0.7152f;
-float GrayScaleFilter::blue_coeff = 0.0722f;
+const float GrayScaleFilter::red_coefficient = 0.2126f;
+const float GrayScaleFilter::green_coefficient = 0.7152f;
+const float GrayScaleFilter::blue_coefficient = 0.0722f;
 
 ImageWrapper GrayScaleFilter::operator()(const ImageWrapper & input) {
     const int width = input.width();
@@ -12,17 +12,15 @@ ImageWrapper GrayScaleFilter::operator()(const ImageWrapper & input) {
     for (int y = 0; y < width; ++y) {
         for (int x = 0; x < height; ++x) {
             const RGBA32 * in_px = reinterpret_cast<const RGBA32 *>(&input(x, y));
-            float gray = red_coeff * in_px->r +
-                         green_coeff * in_px->g +
-                         blue_coeff * in_px->b;
+            float gray = red_coefficient * in_px->ch.r +
+                         green_coefficient * in_px->ch.g +
+                         blue_coefficient * in_px->ch.b;
 
             RGBA32 * out_px = reinterpret_cast<RGBA32 *>(&output(x, y));
-            out_px->r = gray;
-            out_px->g = gray;
-            out_px->b = gray;
+            out_px->ch.r = gray;
+            out_px->ch.g = gray;
+            out_px->ch.b = gray;
         }
     }
     return output;
 }
-
-

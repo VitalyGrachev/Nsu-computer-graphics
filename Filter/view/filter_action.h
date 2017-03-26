@@ -6,11 +6,9 @@
 class FilterAction : public QAction {
 Q_OBJECT
 public:
-    FilterAction(const QString & text, QObject * parent = nullptr)
-            : QAction(text, parent) {}
+    FilterAction(const QString & text, QObject * parent = nullptr);
 
-    FilterAction(const QIcon & icon, const QString & text, QObject * parent = nullptr)
-            : QAction(icon, text, parent) {}
+    FilterAction(const QIcon & icon, const QString & text, QObject * parent = nullptr);
 
 signals:
     void apply_filter(const QString & filter_name);

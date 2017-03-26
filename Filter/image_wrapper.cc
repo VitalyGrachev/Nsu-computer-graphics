@@ -50,20 +50,20 @@ bool ImageWrapper::texture_lookup(float u, float v, QRgb * output_color) {
     const float fu = u - iu;
     const float fv = v - iv;
 
-    const RGBA32 lt = this->(iu, iv);
-    const RGBA32 lb = (contains(iu, iv + 1) ? this->(iu, iv + 1) : lt);
-    const RGBA32 rt = (contains(iu + 1, iv) ? this->(iu + 1, iv) : lt);
-    const RGBA32 rb = (contains(iu + 1, iv + 1) ? this->(iu + 1, iv + 1) : lt);
+    const RGBA32 lt = (*this)(iu, iv);
+    const RGBA32 lb = (contains(iu, iv + 1) ? (*this)(iu, iv + 1) : lt);
+    const RGBA32 rt = (contains(iu + 1, iv) ? (*this)(iu + 1, iv) : lt);
+    const RGBA32 rb = (contains(iu + 1, iv + 1) ? (*this)(iu + 1, iv + 1) : lt);
 
     RGBA32 result;
-    result.r = fv * (fu * lt.r + (1.0f - fu) * rt.r) +
-               (1.0f - fv) * (fu * lb.r + (1.0f - fu) * rb.r);
-    result.g = fv * (fu * lt.g + (1.0f - fu) * rt.g) +
-               (1.0f - fv) * (fu * lb.g + (1.0f - fu) * rb.g);
-    result.b = fv * (fu * lt.b + (1.0f - fu) * rt.b) +
-               (1.0f - fv) * (fu * lb.b + (1.0f - fu) * rb.b);
-    result.a = fv * (fu * lt.a + (1.0f - fu) * rt.a) +
-               (1.0f - fv) * (fu * lb.a + (1.0f - fu) * rb.a);
+    result.ch.r = fv * (fu * lt.ch.r + (1.0f - fu) * rt.ch.r) +
+               (1.0f - fv) * (fu * lb.ch.r + (1.0f - fu) * rb.ch.r);
+    result.ch.g = fv * (fu * lt.ch.g + (1.0f - fu) * rt.ch.g) +
+               (1.0f - fv) * (fu * lb.ch.g + (1.0f - fu) * rb.ch.g);
+    result.ch.b = fv * (fu * lt.ch.b + (1.0f - fu) * rt.ch.b) +
+               (1.0f - fv) * (fu * lb.ch.b + (1.0f - fu) * rb.ch.b);
+    result.ch.a = fv * (fu * lt.ch.a + (1.0f - fu) * rt.ch.a) +
+               (1.0f - fv) * (fu * lb.ch.a + (1.0f - fu) * rb.ch.a);
 
     *(output_color) = result.qrgb;
     return true;
@@ -79,7 +79,7 @@ void ImageWrapper::draw_horizontal_line(int x1, int x2, int y,
     x2 = std::min(image.width() - 1, x2);
 
     LineDrawHelper helper(line_type);
-    QRgb * pixel = &this->(x1, y);
+    QRgb * pixel = &(*this)(x1, y);
     for (int x = x1; x <= x2; ++x) {
         if (helper.should_draw_pixel()) {
             *pixel = color;
@@ -97,7 +97,7 @@ void ImageWrapper::draw_vertical_line(int x, int y1, int y2,
     y2 = std::min(image.height() - 1, y2);
 
     LineDrawHelper helper(line_type);
-    QRgb * pixel = &this->(x, y1);
+    QRgb * pixel = &(*this)(x, y1);
     for (int y = y1; y <= y2; ++y) {
         if (helper.should_draw_pixel()) {
             *pixel = color;
@@ -151,7 +151,7 @@ void ImageWrapper::insert_image(const ImageWrapper & to_insert, int left_top_x, 
 
     for (int y = 0; y < to_insert.height(); ++y) {
         for (int x = 0; x < to_insert.width(); ++x) {
-            this->(left_top_x + x, left_top_y + y) = to_insert(x, y);
+            (*this)(left_top_x + x, left_top_y + y) = to_insert(x, y);
         }
     }
 }
@@ -168,8 +168,9 @@ ImageWrapper ImageWrapper::copy(const QRect & rect) {
     ImageWrapper copied(QImage(rect.width(), rect.height(), image.format()));
     for (int y = 0; y < rect.height(); ++y) {
         for (int x = 0; x < rect.width(); ++x) {
-            copied(x, y) = this->(rect.x + x, rect.y + y);
+            copied(x, y) = (*this)(rect.x() + x, rect.y() + y);
         }
     }
     return copied;
 }
+

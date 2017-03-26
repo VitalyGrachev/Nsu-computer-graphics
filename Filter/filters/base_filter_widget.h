@@ -19,7 +19,7 @@ public slots:
 signals:
 
     void filtrate(uint64_t op_id,
-                  std::unique_ptr<AbstractFilter> && filter,
+                  std::shared_ptr<AbstractFilter> filter,
                   const ImageWrapper & input_image);
 
     void filtered(ImageWrapper output_image);
@@ -31,7 +31,7 @@ protected:
 };
 
 inline void BaseFilterWidget::filtration_finished(uint64_t op_id,
-                                                        ImageWrapper output_image) {
+                                                  ImageWrapper output_image) {
     emit filtered(output_image);
     if (op_id == last_op_id) {
         emit all_filters_done();

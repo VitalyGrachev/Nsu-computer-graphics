@@ -8,9 +8,9 @@ public:
     ImageWrapper operator()(const ImageWrapper & input) override;
 
 private:
-    const float red_coeff;
-    const float green_coeff;
-    const float blue_coeff;
+    static const float red_coefficient;
+    static const float green_coefficient;
+    static const float blue_coefficient;
 };
 
 

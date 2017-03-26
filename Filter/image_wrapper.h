@@ -7,18 +7,26 @@ enum class LineType : char {
     SOLID, DOTTED
 };
 
-union RGBA32 {
-    QRgb qrgb;
+struct Channel {
     uint8_t a;
     uint8_t r;
     uint8_t g;
     uint8_t b;
 
+    Channel() = default;
+
+    Channel(uint8_t a, uint8_t r, uint8_t g, uint8_t b) : a(a), r(r), g(g), b(b) {}
+};
+
+union RGBA32 {
+    QRgb qrgb;
+    Channel ch;
+
     RGBA32() = default;
 
     RGBA32(const QRgb & qrgb) : qrgb(qrgb) {}
 
-    RGBA32(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+    RGBA32(uint8_t a, uint8_t r, uint8_t g, uint8_t b) : ch(a, r, g, b) {}
 };
 
 class ImageWrapper {
@@ -31,11 +39,11 @@ public:
 
     ImageWrapper(const ImageWrapper &) = default;
 
-    ImageWrapper(const ImageWrapper &&) = default;
+    ImageWrapper(ImageWrapper &&) = default;
 
     ImageWrapper & operator=(const ImageWrapper &) = default;
 
-    ImageWrapper & operator=(const ImageWrapper &&) = default;
+    ImageWrapper & operator=(ImageWrapper &&) = default;
 
     ~ImageWrapper() = default;
 

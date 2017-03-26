@@ -6,12 +6,16 @@
 template<class ID, class PRODUCT>
 class Factory {
 public:
-    static Factory & instance();
-
-    PRODUCT * create(const ID & id);
+    PRODUCT * create(const ID & id) const;
 
     template<class T>
-    void register_type(const ID & id);
+    bool register_type(const ID & id);
+
+    static Factory & instance()
+    {
+        static Factory f;
+        return f;
+    }
 
 private:
     Factory() {}
@@ -30,7 +34,7 @@ private:
     public:
         virtual ~BaseCreator() {}
 
-        virtual PRODUCT * operator()();
+        virtual PRODUCT * operator()() = 0;
     };
 
     template<class T>
@@ -43,34 +47,31 @@ private:
         }
     };
 
-    std::map<ID, PRODUCT *> creators;
+    std::map<ID, BaseCreator *> creators;
 };
 
 template<class ID, class PRODUCT>
 Factory<ID, PRODUCT>::~Factory() {
- for (std::pair<ID, PRODUCT> & value : creators) {
+ for (auto & value : creators) {
      delete value.second;
  }
 }
 
 template<class ID, class PRODUCT>
-Factory<ID, PRODUCT> & Factory<ID, PRODUCT>::instance() {
-    static Factory factory;
-    return factory;
-}
-
-template<class ID, class PRODUCT>
-PRODUCT * Factory<ID, PRODUCT>::create(const ID & id) {
+PRODUCT * Factory<ID, PRODUCT>::create(const ID & id) const {
     auto creator = creators.find(id);
     if (creator != creators.end()) {
-        return creator->second();
+        return creator->second->operator()();
     }
     return nullptr;
 }
 
-template<class ID, class PRODUCT, class T>
-void Factory<ID, PRODUCT>::register_type(const ID & id) {
-    creators.insert(std::make_pair(id, new DefaultCreator<T>()));
+template<class ID, class PRODUCT>
+template<class T>
+bool Factory<ID, PRODUCT>::register_type(const ID & id) {
+    BaseCreator * creator = new DefaultCreator<T>();
+    creators.insert(std::make_pair(id, creator));
+    return true;
 };
 
 

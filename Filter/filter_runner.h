@@ -10,7 +10,7 @@ class FilterRunner : public QObject, public QRunnable {
 Q_OBJECT
 public:
     FilterRunner(uint64_t op_id,
-                 std::unique_ptr<AbstractFilter> && filter,
+                 std::shared_ptr<AbstractFilter> filter,
                  const ImageWrapper & input_image);
 
     void run() override;
@@ -21,7 +21,7 @@ signals:
 
 private:
     uint64_t op_id;
-    std::unique_ptr<AbstractFilter> filter;
+    std::shared_ptr<AbstractFilter> filter;
     ImageWrapper input_image;
 };
 
