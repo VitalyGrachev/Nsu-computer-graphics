@@ -84,6 +84,7 @@ void ImageWrapper::draw_horizontal_line(int x1, int x2, int y,
         if (helper.should_draw_pixel()) {
             *pixel = color;
         }
+        ++pixel;
     }
 }
 
