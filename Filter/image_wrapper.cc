@@ -26,10 +26,10 @@ private:
 
 union RGBA32 {
     QRgb rgb;
+    uint8_t a;
     uint8_t r;
     uint8_t g;
     uint8_t b;
-    uint8_t a;
 
     RGBA32() = default;
 
@@ -46,6 +46,10 @@ ImageWrapper::ImageWrapper()
 
 ImageWrapper::ImageWrapper(const QImage & image)
         : image(image) {
+}
+
+void ImageWrapper::swap(ImageWrapper & other) {
+    image.swap(other.image);
 }
 
 bool ImageWrapper::texture_lookup(float u, float v, QRgb * output_color) {
@@ -139,7 +143,7 @@ void ImageWrapper::fill(const QRgb & color) {
 void ImageWrapper::fill(const QRect & rect, const QRgb & color) {
     if (rect.x() < 0 || rect.y() < 0 ||
         rect.x() + rect.width() >= width() || rect.y() + rect.height() >= height()) {
-        throw std::invalid_argument("Rect to fill larger than image.");
+        throw std::invalid_argument("Rect larger than image.");
     }
 
     uchar * line_start = image.bits() + rect.y() * image.bytesPerLine();
@@ -152,18 +156,33 @@ void ImageWrapper::fill(const QRect & rect, const QRgb & color) {
 }
 
 void ImageWrapper::insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y) {
-    const int donor_left = (left_top_x < 0 ? -left_top_x : 0);
-    const int donor_top = (left_top_y < 0 ? -left_top_y : 0);
-    const int excess_width = left_top_x + to_insert.width() - width();
-    const int pixels_to_copy_x = to_insert.width() - (excess_width > 0 ? excess_width : 0) - donor_left;
-    const int excess_height = left_top_x + to_insert.height() - height();
-    const int pixels_to_copy_y = to_insert.height() - (excess_height > 0 ? excess_height : 0) - donor_top;
-    left_top_x = (left_top_x < 0 ? 0 : left_top_x);
-    left_top_y = (left_top_y < 0 ? 0 : left_top_y);
+    if (left_top_x < 0 || left_top_y < 0 ||
+        left_top_x + to_insert.width() >= width() ||
+        left_top_y + to_insert.height() >= height()) {
+        throw std::invalid_argument("Inserted image larger than acceptor image.");
+    }
 
-    for (int y = 0; y < pixels_to_copy_y; ++y) {
-        for (int x = 0; x < pixels_to_copy_x; ++x) {
-            this->(left_top_x + x, left_top_y + y) = to_insert(donor_left + x, donor_top + y);
+    for (int y = 0; y < to_insert.height(); ++y) {
+        for (int x = 0; x < to_insert.width(); ++x) {
+            this->(left_top_x + x, left_top_y + y) = to_insert(x, y);
         }
     }
+}
+
+ImageWrapper ImageWrapper::copy(const QRect & rect) {
+    if (rect.isNull()) {
+        return *this;
+    }
+    if (rect.x() < 0 || rect.y() < 0 ||
+        rect.x() + rect.width() >= width() || rect.y() + rect.height() >= height()) {
+        throw std::invalid_argument("Rect larger than image.");
+    }
+
+    ImageWrapper copied(QImage(rect.width(), rect.height(), image.format()));
+    for (int y = 0; y < rect.height(); ++y) {
+        for (int x = 0; x < rect.width(); ++x) {
+            copied(x, y) = this->(rect.x + x, rect.y + y);
+        }
+    }
+    return copied;
 }

@@ -2,7 +2,6 @@
 #define IMAGE_WRAPPER_H
 
 #include <QImage>
-#include "QRgb.h"
 
 enum class LineType : char {
     SOLID, DOTTED
@@ -23,6 +22,8 @@ public:
     ImageWrapper & operator=(const ImageWrapper &&) = default;
 
     ~ImageWrapper() = default;
+
+    void swap(ImageWrapper & other);
 
     bool contains(int x, int y) const;
 
@@ -46,6 +47,8 @@ public:
 
     void draw_line(int x1, int y1, int x2, int y2,
                    const QRgb & color, LineType type = LineType::DOTTED);
+
+    ImageWrapper copy(const QRect & rect = QRect());
 
     void insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y);
 
