@@ -1,13 +1,13 @@
 #ifndef ABSTRACT_FILTER_H
 #define ABSTRACT_FILTER_H
 
-#include <QImage>
+#include "../image_wrapper.h"
 
 class AbstractFilter {
 public:
     virtual ~AbstractFilter() {}
 
-    virtual void operator()(const QImage & input, QImage * output) = 0;
+    virtual ImageWrapper operator()(const ImageWrapper & input) = 0;
 };
 
 #endif //ABSTRACT_FILTER_H
