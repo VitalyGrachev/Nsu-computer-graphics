@@ -59,7 +59,7 @@ public:
 
     int height() const { return image.height(); }
 
-    bool texture_lookup(float u, float v, QRgb * output_color);
+    bool texture_lookup(float u, float v, QRgb * output_color) const;
 
     QImage & to_QImage() { return image; }
 
@@ -72,7 +72,7 @@ public:
     void draw_line(int x1, int y1, int x2, int y2,
                    const QRgb & color, LineType type = LineType::DOTTED);
 
-    ImageWrapper copy(const QRect & rect = QRect());
+    ImageWrapper copy(const QRect & rect = QRect()) const;
 
     void insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y);
 

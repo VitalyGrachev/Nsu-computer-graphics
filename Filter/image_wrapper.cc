@@ -39,7 +39,7 @@ void ImageWrapper::swap(ImageWrapper & other) {
     image.swap(other.image);
 }
 
-bool ImageWrapper::texture_lookup(float u, float v, QRgb * output_color) {
+bool ImageWrapper::texture_lookup(float u, float v, QRgb * output_color) const {
     const int iu = static_cast<int>(u);
     const int iv = static_cast<int>(v);
 
@@ -57,13 +57,13 @@ bool ImageWrapper::texture_lookup(float u, float v, QRgb * output_color) {
 
     RGBA32 result;
     result.ch.r = fv * (fu * lt.ch.r + (1.0f - fu) * rt.ch.r) +
-               (1.0f - fv) * (fu * lb.ch.r + (1.0f - fu) * rb.ch.r);
+                  (1.0f - fv) * (fu * lb.ch.r + (1.0f - fu) * rb.ch.r);
     result.ch.g = fv * (fu * lt.ch.g + (1.0f - fu) * rt.ch.g) +
-               (1.0f - fv) * (fu * lb.ch.g + (1.0f - fu) * rb.ch.g);
+                  (1.0f - fv) * (fu * lb.ch.g + (1.0f - fu) * rb.ch.g);
     result.ch.b = fv * (fu * lt.ch.b + (1.0f - fu) * rt.ch.b) +
-               (1.0f - fv) * (fu * lb.ch.b + (1.0f - fu) * rb.ch.b);
+                  (1.0f - fv) * (fu * lb.ch.b + (1.0f - fu) * rb.ch.b);
     result.ch.a = fv * (fu * lt.ch.a + (1.0f - fu) * rt.ch.a) +
-               (1.0f - fv) * (fu * lb.ch.a + (1.0f - fu) * rb.ch.a);
+                  (1.0f - fv) * (fu * lb.ch.a + (1.0f - fu) * rb.ch.a);
 
     *(output_color) = result.qrgb;
     return true;
@@ -157,7 +157,7 @@ void ImageWrapper::insert_image(const ImageWrapper & to_insert, int left_top_x, 
     }
 }
 
-ImageWrapper ImageWrapper::copy(const QRect & rect) {
+ImageWrapper ImageWrapper::copy(const QRect & rect) const {
     if (rect.isNull()) {
         return *this;
     }
