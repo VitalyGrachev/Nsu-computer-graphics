@@ -2,7 +2,7 @@
 
 FilterRunner::FilterRunner(uint64_t op_id,
                            std::shared_ptr<AbstractFilter> filter,
-                           const ImageWrapper & input_image)
+                           ImageWrapper input_image)
         : op_id(op_id),
           filter(filter),
           input_image(input_image) {}

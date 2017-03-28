@@ -16,7 +16,7 @@ public slots:
 
     void filtrate_image(uint64_t op_id,
                         std::shared_ptr<AbstractFilter> filter,
-                        const ImageWrapper & input_image);
+                        ImageWrapper input_image);
 
 signals:
 
