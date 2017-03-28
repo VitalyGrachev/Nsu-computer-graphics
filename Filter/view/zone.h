@@ -8,11 +8,17 @@ class Zone : public QWidget {
 public:
     Zone(int width, int height, QWidget * parent = nullptr);
 
-    void set_image(const ImageWrapper & image);
+    void set_image(const ImageWrapper & attached_image);
 
     ImageWrapper & get_image() { return attached_image; }
 
     const ImageWrapper & get_image() const { return attached_image; }
+
+    void clear();
+
+    int width() const { return shown_image.width() - 2; }
+
+    int height() const { return shown_image.height() - 2; }
 
 protected:
     void paintEvent(QPaintEvent * event) override;
@@ -20,8 +26,6 @@ protected:
 private:
     ImageWrapper attached_image;
     ImageWrapper shown_image;
-    int width;
-    int height;
 
     static const QRgb border_color;
     static const QRgb background_color;
