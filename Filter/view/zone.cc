@@ -33,8 +33,8 @@ void Zone::set_image(ImageWrapper image) {
     const int height_diff = height() - attached_image.height();
     shown_image.insert_image(attached_image, 1, 1);
 
-    shown_image.fill(QRect(attached_image.width() + 1, 1, width_diff, height_diff), background_color);
-    shown_image.fill(QRect(1, attached_image.height() + 1, width_diff, height_diff), background_color);
+    shown_image.fill(QRect(attached_image.width(), 1, width_diff, height()), background_color);
+    shown_image.fill(QRect(1, attached_image.height(), width(), height_diff), background_color);
 
     update();
 }
