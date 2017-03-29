@@ -26,11 +26,11 @@ void Zone::clear() {
     update();
 }
 
-void Zone::set_image(const ImageWrapper & image) {
+void Zone::set_image(ImageWrapper image) {
     attached_image = image;
 
-    const int width_diff = shown_image.width() - attached_image.width();
-    const int height_diff = shown_image.height() - attached_image.height();
+    const int width_diff = width() - attached_image.width();
+    const int height_diff = height() - attached_image.height();
     shown_image.insert_image(attached_image, 1, 1);
 
     shown_image.fill(QRect(attached_image.width() + 1, 1, width_diff, height_diff), background_color);

@@ -5,20 +5,25 @@
 #include "../image_wrapper.h"
 
 class Zone : public QWidget {
+Q_OBJECT
 public:
     Zone(int width, int height, QWidget * parent = nullptr);
 
-    void set_image(const ImageWrapper & attached_image);
+    virtual ~Zone() {}
 
     ImageWrapper & get_image() { return attached_image; }
 
     const ImageWrapper & get_image() const { return attached_image; }
 
-    void clear();
+    virtual void clear();
 
     int width() const { return shown_image.width() - 2; }
 
     int height() const { return shown_image.height() - 2; }
+
+public slots:
+
+    virtual void set_image(ImageWrapper attached_image);
 
 protected:
     void paintEvent(QPaintEvent * event) override;
