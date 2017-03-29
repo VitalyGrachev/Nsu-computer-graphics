@@ -130,8 +130,11 @@ void ImageWrapper::fill(const QRgb & color) {
 
 void ImageWrapper::fill(const QRect & rect, const QRgb & color) {
     if (rect.x() < 0 || rect.y() < 0 ||
-        rect.x() + rect.width() >= width() || rect.y() + rect.height() >= height()) {
-        throw std::invalid_argument("Rect larger than image.");
+        rect.x() + rect.width() > width() || rect.y() + rect.height() > height()) {
+        const std::string msg("Fill rect larger than image. ");
+        throw std::invalid_argument(msg +
+                                    std::to_string(rect.x() + rect.width()) + " vs " + std::to_string(width()) + ' ' +
+                                    std::to_string(rect.y() + rect.height()) + " vs " + std::to_string(height()));
     }
 
     uchar * line_start = image.bits() + rect.y() * image.bytesPerLine();
@@ -145,8 +148,8 @@ void ImageWrapper::fill(const QRect & rect, const QRgb & color) {
 
 void ImageWrapper::insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y) {
     if (left_top_x < 0 || left_top_y < 0 ||
-        left_top_x + to_insert.width() >= width() ||
-        left_top_y + to_insert.height() >= height()) {
+        left_top_x + to_insert.width() > width() ||
+        left_top_y + to_insert.height() > height()) {
         throw std::invalid_argument("Inserted image larger than acceptor image.");
     }
 
@@ -162,8 +165,11 @@ ImageWrapper ImageWrapper::copy(const QRect & rect) const {
         return *this;
     }
     if (rect.x() < 0 || rect.y() < 0 ||
-        rect.x() + rect.width() >= width() || rect.y() + rect.height() >= height()) {
-        throw std::invalid_argument("Rect larger than image.");
+        rect.x() + rect.width() > width() || rect.y() + rect.height() > height()) {
+        const std::string msg("Copy rect larger than image. ");
+        throw std::invalid_argument(msg +
+                                    std::to_string(rect.x() + rect.width()) + " vs " + std::to_string(width()) + ' ' +
+                                    std::to_string(rect.y() + rect.height()) + " vs " + std::to_string(height()));
     }
 
     ImageWrapper copied(QImage(rect.width(), rect.height(), image.format()));

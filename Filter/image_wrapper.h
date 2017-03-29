@@ -1,6 +1,7 @@
 #ifndef IMAGE_WRAPPER_H
 #define IMAGE_WRAPPER_H
 
+#include <cstdint>
 #include <QImage>
 
 enum class LineType : char {
