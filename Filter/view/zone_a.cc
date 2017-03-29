@@ -15,19 +15,21 @@ QRect ZoneA::selected_rect(const QPoint & mouse_pos) const {
     const float scale = 1.0f / scale_factor;
     const int pos_x = scale * (mouse_pos.x() - 1) - width() / 2;
     const int pos_y = scale * (mouse_pos.y() - 1) - height() / 2;
-    const int rect_left_x = std::min(std::max(pos_x, 0), original_image.width() - width());
-    const int rect_top_y = std::min(std::max(pos_y, 0), original_image.height() - height());
-    const int rect_width = std::min(width(), original_image.width() - rect_left_x);
-    const int rect_height = std::min(height(), original_image.height() - rect_top_y);
-    return QRect(rect_left_x, rect_top_y, rect_width, rect_height);
+    const int rect_left_x = std::min(std::max(pos_x, 0), std::max(original_image.width() - width(), 0));
+    const int rect_top_y = std::min(std::max(pos_y, 0), std::max(original_image.height() - height(), 0));
+    const int remaining_x = original_image.width() - rect_left_x;
+    const int remaining_y = original_image.height() - rect_top_y;
+    const int rect_width = std::min(width(), remaining_x);
+    const int rect_height = std::min(height(), remaining_y);
+    return QRect(rect_left_x, rect_top_y, rect_width - 1, rect_height - 1);
 }
 
 void ZoneA::show_rect(const QRect & rect) {
     ImageWrapper modified(scaled_image);
     const int lx = rect.x();
     const int ty = rect.y();
-    const int rx = lx + rect.width();
-    const int by = ty + rect.height();
+    const int rx = lx + rect.width() - 1;
+    const int by = ty + rect.height() - 1;
     modified.draw_line(lx, ty, rx, ty, rect_color);
     modified.draw_line(lx, ty, lx, by, rect_color);
     modified.draw_line(rx, ty, rx, by, rect_color);
