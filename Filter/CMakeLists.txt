@@ -56,7 +56,7 @@ set(SOURCE_FILES
         filters/sharpening/sharpening_filter.cc
         filters/sharpening/sharpening_filter.h
         filters/sharpening/sharpening_widget.cc
-        filters/sharpening/sharpening_widget.h)
+        filters/sharpening/sharpening_widget.h filters/emboss/emboss_filter.cc filters/emboss/emboss_filter.h filters/emboss/emboss_widget.cc filters/emboss/emboss_widget.h)
 
 find_package(Qt5Widgets REQUIRED)
 
