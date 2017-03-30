@@ -28,7 +28,9 @@ SOURCES += main.cpp \
     filters/blur/blur_widget.cc \
     filters/gamma_correction/gamma_correction_filter.cc \
     filters/gamma_correction/gamma_correction_widget.cc \
-    view/value_setter.cc
+    view/value_setter.cc \
+    filters/sharpening/sharpening_filter.cc \
+    filters/sharpening/sharpening_widget.cc
 
 HEADERS  += \ 
     filters/zoom/zoom_filter.h \
@@ -55,7 +57,9 @@ HEADERS  += \
     filters/blur/blur_widget.h \
     filters/gamma_correction/gamma_correction_filter.h \
     filters/gamma_correction/gamma_correction_widget.h \
-    view/value_setter.h
+    view/value_setter.h \
+    filters/sharpening/sharpening_filter.h \
+    filters/sharpening/sharpening_widget.h
 
 OTHER_FILES += \
     Filter.pro.user
