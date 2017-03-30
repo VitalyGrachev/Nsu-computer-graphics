@@ -27,15 +27,19 @@ void Zone::clear() {
 }
 
 void Zone::set_image(ImageWrapper image) {
+    if (image.to_QImage().isNull()) {
+        return;
+    }
     attached_image = image;
 
-    const int width_diff = width() - attached_image.width();
-    const int height_diff = height() - attached_image.height();
+    const int width_diff = width() - attached_image.width() + 1;
+    const int height_diff = height() - attached_image.height() + 1;
     shown_image.insert_image(attached_image, 1, 1);
 
     shown_image.fill(QRect(attached_image.width(), 1, width_diff, height()), background_color);
     shown_image.fill(QRect(1, attached_image.height(), width(), height_diff), background_color);
 
+    emit image_changed(attached_image);
     update();
 }
 

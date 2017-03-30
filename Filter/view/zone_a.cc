@@ -2,7 +2,7 @@
 
 #include <QMouseEvent>
 
-#include "../filters/scaling/scaling_filter.h"
+#include "../filters/zoom/zoom_filter.h"
 
 const QRgb ZoneA::rect_color = QColor(200, 200, 200).rgb();
 
@@ -21,7 +21,7 @@ QRect ZoneA::selected_rect(const QPoint & mouse_pos) const {
     const int remaining_y = original_image.height() - rect_top_y;
     const int rect_width = std::min(width(), remaining_x);
     const int rect_height = std::min(height(), remaining_y);
-    return QRect(rect_left_x, rect_top_y, rect_width - 1, rect_height - 1);
+    return QRect(rect_left_x, rect_top_y, rect_width, rect_height);
 }
 
 void ZoneA::show_rect(const QRect & rect) {
@@ -79,18 +79,10 @@ void ZoneA::set_image(ImageWrapper image) {
     const float w_scale_factor = static_cast<float>(width()) / image.width();
     const float h_scale_factor = static_cast<float>(height()) / image.height();
     const float res_scale_factor = std::min(w_scale_factor, h_scale_factor);
-    if (res_scale_factor < 1.0f) {
-        const int w = std::min(width(), static_cast<int>(res_scale_factor * image.width()));
-        const int h = std::min(height(), static_cast<int>(res_scale_factor * image.height()));
-        scale_factor = res_scale_factor;
-        ScalingFilter filter(w, h);
-        scaled_image = filter(image);
-        Zone::set_image(scaled_image);
-    } else {
-        scale_factor = 1.0f;
-        scaled_image = image;
-        Zone::set_image(image);
-    }
+    scale_factor = res_scale_factor;
+    ZoomFilter filter(scale_factor);
+    scaled_image = filter(image);
+    Zone::set_image(scaled_image);
 }
 
 void ZoneA::set_selection_enabled(bool enabled) {

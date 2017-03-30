@@ -25,6 +25,10 @@ public slots:
 
     virtual void set_image(ImageWrapper attached_image);
 
+signals:
+
+    void image_changed(ImageWrapper new_image);
+
 protected:
     void paintEvent(QPaintEvent * event) override;
 

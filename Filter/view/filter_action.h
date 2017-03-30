@@ -11,11 +11,13 @@ public:
     FilterAction(const QIcon & icon, const QString & text, QObject * parent = nullptr);
 
 signals:
-    void apply_filter(const QString & filter_name);
+
+    void apply_filter(QString filter_name);
 
 private slots:
 
     void was_toggled(bool checked);
+
 private:
     void init();
 };

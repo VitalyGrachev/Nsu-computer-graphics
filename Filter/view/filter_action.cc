@@ -11,12 +11,12 @@ FilterAction::FilterAction(const QIcon & icon, const QString & text, QObject * p
 }
 
 void FilterAction::init() {
-    connect(this, SIGNAL(toggled(bool)),
+    connect(this, SIGNAL(triggered(bool)),
             this, SLOT(was_toggled(bool)));
 }
 
 void FilterAction::was_toggled(bool checked) {
-    if(checked) {
+//    if(checked) {
         emit apply_filter(text());
-    }
+//    }
 }
