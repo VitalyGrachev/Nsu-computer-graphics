@@ -35,7 +35,10 @@ SOURCES += main.cpp \
     filters/emboss/emboss_filter.cc \
     filters/emboss/emboss_widget.cc \
     filters/watercolor/watercolor_filter.cc \
-    filters/watercolor/watercolor_widget.cc
+    filters/watercolor/watercolor_widget.cc \
+    filters/edge_detection/edge_detection_filter.cc \
+    filters/edge_detection/edge_detection_widget.cc \
+    filters/threshold/threshold_filter.cc
 
 HEADERS  += \ 
     filters/zoom/zoom_filter.h \
@@ -69,7 +72,11 @@ HEADERS  += \
     filters/emboss/emboss_filter.h \
     filters/emboss/emboss_widget.h \
     filters/watercolor/watercolor_filter.h \
-    filters/watercolor/watercolor_widget.h
+    filters/watercolor/watercolor_widget.h \
+    filters/edge_detection/edge_detection_filter.h \
+    filters/edge_detection/edge_detection_widget.h \
+    filters/threshold/threshold_filter.h \
+    filters/util.h
 
 OTHER_FILES += \
     Filter.pro.user
