@@ -4,7 +4,7 @@
 #include "../blur/median_blur_filter.h"
 
 ImageWrapper WatercolorFilter::operator()(const ImageWrapper & input) {
-    MedianBlurFilter median_blur(7);
+    MedianBlurFilter median_blur(5);
 
     SquareMatrix<float> kernel = SquareMatrix<float>::ones(3);
     kernel(1, 1) = -10.0f;
