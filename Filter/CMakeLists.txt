@@ -3,9 +3,29 @@ project(Filter)
 
 set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(SOURCE_FILES main.cpp view/main_window.cc view/main_window.h view/zone.cc view/zone.h filters/abstract_filter.h filter_applicator.cc filter_applicator.h image_wrapper.cc image_wrapper.h filter_runner.cc filter_runner.h filters/grayscale/grayscale_filter.cc filters/grayscale/grayscale_filter.h filters/base_filter_widget.h view/filter_action.cc view/filter_action.h factory.h filters/grayscale/grayscale_widget.cc filters/grayscale/grayscale_widget.h)
+set(SOURCE_FILES
+        main.cpp
+        view/main_window.cc
+        view/main_window.h
+        view/zone.cc
+        view/zone.h
+        filters/abstract_filter.h
+        filter_applicator.cc
+        filter_applicator.h
+        image_wrapper.cc
+        image_wrapper.h
+        filter_runner.cc
+        filter_runner.h
+        filters/grayscale/grayscale_filter.cc
+        filters/grayscale/grayscale_filter.h
+        filters/base_filter_widget.h
+        view/filter_action.cc
+        view/filter_action.h
+        factory.h
+        filters/grayscale/grayscale_widget.cc
+        filters/grayscale/grayscale_widget.h view/zone_a.cc view/zone_a.h view/filter_action_group.cc view/filter_action_group.h filters/base_filter_widget.cc filters/zoom/zoom_filter.cc filters/zoom/zoom_filter.h filters/zoom/zoom_widget.cc filters/zoom/zoom_widget.h filters/convolution/convolution_filter.h filters/convolution/square_matrix.h filter_action_group_creator.cc filter_action_group_creator.h filters/negative/negative_filter.cc filters/negative/negative_filter.h filters/negative/negative_widget.cc filters/negative/negative_widget.h)
 
 find_package(Qt5Widgets REQUIRED)
 
