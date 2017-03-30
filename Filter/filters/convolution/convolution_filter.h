@@ -7,17 +7,21 @@
 template<class T>
 class ConvolutionFilter : public AbstractFilter {
 public:
-    ConvolutionFilter(const SquareMatrix<T> & kernel);
+    ConvolutionFilter(const SquareMatrix<T> & kernel,
+                      T factor = static_cast<T>(1),
+                      T bias = static_cast<T>(0));
 
     ImageWrapper operator()(const ImageWrapper & input) override;
 
 private:
     SquareMatrix<T> kernel;
+    T factor;
+    T bias;
 };
 
 template<class T>
-ConvolutionFilter<T>::ConvolutionFilter(const SquareMatrix<T> & kernel)
-        : kernel(kernel) {}
+ConvolutionFilter<T>::ConvolutionFilter(const SquareMatrix<T> & kernel, T factor, T bias)
+        : kernel(kernel), factor(factor), bias(bias) {}
 
 namespace {
 int clamp(int value, int min, int max) {
@@ -43,7 +47,7 @@ ImageWrapper ConvolutionFilter<T>::operator()(const ImageWrapper & input) {
                     const int px = clamp(x + kx - k_half_size, 0, width);
                     const int py = clamp(y + ky - k_half_size, 0, height);
                     const RGBA32 in = input(px, py);
-                    const T & k_value = kernel(kx, ky);
+                    const T & k_value = factor * kernel(kx, ky);
                     val_r += k_value * in.ch.r;
                     val_g += k_value * in.ch.g;
                     val_b += k_value * in.ch.b;
@@ -51,9 +55,9 @@ ImageWrapper ConvolutionFilter<T>::operator()(const ImageWrapper & input) {
             }
             const RGBA32 anchor = input(x, y);
             RGBA32 out(anchor.ch.a,
-                       static_cast<uint8_t>(val_r),
-                       static_cast<uint8_t>(val_g),
-                       static_cast<uint8_t>(val_b));
+                       static_cast<uint8_t>(clamp(val_r + bias, 0, 255)),
+                       static_cast<uint8_t>(clamp(val_g + bias, 0, 255)),
+                       static_cast<uint8_t>(clamp(val_b + bias, 0, 255)));
             output(x, y) = out.qrgb;
         }
     }

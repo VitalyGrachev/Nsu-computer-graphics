@@ -57,7 +57,7 @@ SquareMatrix<T> SquareMatrix<T>::ones(int odd_size) {
 
 template<class T>
 SquareMatrix<T>::SquareMatrix(int odd_size, const T & fill_value)
-        : values(odd_size, fill_value), size_(odd_size) {
+        : values(odd_size * odd_size, fill_value), size_(odd_size) {
     if (!odd_size % 2) {
         throw std::invalid_argument("Size must be an odd number.");
     }
