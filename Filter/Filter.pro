@@ -30,7 +30,12 @@ SOURCES += main.cpp \
     filters/gamma_correction/gamma_correction_widget.cc \
     view/value_setter.cc \
     filters/sharpening/sharpening_filter.cc \
-    filters/sharpening/sharpening_widget.cc
+    filters/sharpening/sharpening_widget.cc \
+    filters/blur/median_blur_filter.cc \
+    filters/emboss/emboss_filter.cc \
+    filters/emboss/emboss_widget.cc \
+    filters/watercolor/watercolor_filter.cc \
+    filters/watercolor/watercolor_widget.cc
 
 HEADERS  += \ 
     filters/zoom/zoom_filter.h \
@@ -59,7 +64,12 @@ HEADERS  += \
     filters/gamma_correction/gamma_correction_widget.h \
     view/value_setter.h \
     filters/sharpening/sharpening_filter.h \
-    filters/sharpening/sharpening_widget.h
+    filters/sharpening/sharpening_widget.h \
+    filters/blur/median_blur_filter.h \
+    filters/emboss/emboss_filter.h \
+    filters/emboss/emboss_widget.h \
+    filters/watercolor/watercolor_filter.h \
+    filters/watercolor/watercolor_widget.h
 
 OTHER_FILES += \
     Filter.pro.user
