@@ -45,6 +45,7 @@ void BaseFilterWidget::apply_filter() {
 void BaseFilterWidget::set_zones(Zone * zone_B, Zone * zone_C) {
     this->zone_B = zone_B;
     this->zone_C = zone_C;
+    last_image = zone_C->get_image();
 }
 
 void BaseFilterWidget::accept() {
@@ -52,7 +53,7 @@ void BaseFilterWidget::accept() {
 }
 
 void BaseFilterWidget::cancel() {
-    zone_C->set_image(zone_B->get_image());
+    zone_C->set_image(last_image);
     emit cancelled();
 }
 

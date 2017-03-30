@@ -52,6 +52,7 @@ private:
 
     void enable_buttons(bool enable = true);
 
+    ImageWrapper last_image;
     QPushButton * ok_button;
     QPushButton * cancel_button;
     QVBoxLayout * widget_layout;
