@@ -1,15 +1,32 @@
 #include "filter_applicator.h"
 
+#include <cstdint>
 #include <QScopedPointer>
 #include "filter_runner.h"
 
-void FilterApplicator::filtrate_image(uint64_t op_id,
-                                      std::shared_ptr<AbstractFilter> filter,
-                                      ImageWrapper input_image) {
-    QScopedPointer<FilterRunner> work(new FilterRunner(op_id, std::move(filter), input_image));
+FilterApplicator & FilterApplicator::instance() {
+    static FilterApplicator fa;
+    return fa;
+}
 
-    connect(work.data(), SIGNAL(finished(uint64_t, ImageWrapper)),
-            this, SIGNAL(finished_filtration(uint64_t, ImageWrapper)));
+void FilterApplicator::filtrate_image(std::shared_ptr<AbstractFilter> filter,
+                                      ImageWrapper input_image,
+                                      uint64_t op_id) {
+    filtrate_image(filter, input_image, this, SIGNAL(filtration_finished(ImageWrapper, uint64_t)), op_id);
+}
+
+void FilterApplicator::filtrate_image(std::shared_ptr<AbstractFilter> filter,
+                                      ImageWrapper input_image,
+                                      const QObject * result_receiver,
+                                      const char * method,
+                                      uint64_t op_id) {
+    QScopedPointer<FilterRunner> work(new FilterRunner(std::move(filter), input_image, op_id));
+
+    qRegisterMetaType<uint64_t>("uint64_t");
+    qRegisterMetaType<ImageWrapper>("ImageWrapper");
+
+    connect(work.data(), SIGNAL(finished(ImageWrapper, uint64_t)),
+            result_receiver, method);
 
     thread_pool.clear();
 
