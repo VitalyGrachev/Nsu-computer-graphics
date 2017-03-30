@@ -20,16 +20,16 @@ Zone::Zone(int width, int height, QWidget * parent)
 void Zone::clear() {
     attached_image = ImageWrapper();
 
-    const int width = shown_image.width() - 2;
-    const int height = shown_image.height() - 2;
-    shown_image.fill(QRect(1, 1, width, height), background_color);
+    shown_image.fill(QRect(1, 1, width(), height()), background_color);
     update();
 }
 
 void Zone::set_image(ImageWrapper image) {
-    if (image.to_QImage().isNull()) {
+    if (!image.width() || !image.height()) {
+        clear();
         return;
     }
+
     attached_image = image;
 
     const int width_diff = width() - attached_image.width() + 1;

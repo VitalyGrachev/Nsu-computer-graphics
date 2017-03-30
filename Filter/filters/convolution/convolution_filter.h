@@ -54,7 +54,7 @@ ImageWrapper ConvolutionFilter<T>::operator()(const ImageWrapper & input) {
                        static_cast<uint8_t>(val_r),
                        static_cast<uint8_t>(val_g),
                        static_cast<uint8_t>(val_b));
-            input(x, y) = out.qrgb;
+            output(x, y) = out.qrgb;
         }
     }
     return output;
