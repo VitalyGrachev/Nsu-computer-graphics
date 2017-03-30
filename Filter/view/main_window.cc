@@ -56,7 +56,7 @@ void MainWindow::create_central_widget() {
     central_layout->addSpacing(zone_spacing);
 
     scroll_area->setWidget(central_widget);
-    scroll_area->setAlignment(Qt::AlignCenter);
+    scroll_area->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
 
     setCentralWidget(scroll_area);
 }
