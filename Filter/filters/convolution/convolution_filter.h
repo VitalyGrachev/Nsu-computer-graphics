@@ -44,8 +44,8 @@ ImageWrapper ConvolutionFilter<T>::operator()(const ImageWrapper & input) {
             T val_b = zero;
             for (int ky = 0; ky < kernel.size(); ++ky) {
                 for (int kx = 0; kx < kernel.size(); ++kx) {
-                    const int px = clamp(x + kx - k_half_size, 0, width);
-                    const int py = clamp(y + ky - k_half_size, 0, height);
+                    const int px = clamp(x + kx - k_half_size, 0, width - 1);
+                    const int py = clamp(y + ky - k_half_size, 0, height - 1);
                     const RGBA32 in = input(px, py);
                     const T & k_value = factor * kernel(kx, ky);
                     val_r += k_value * in.ch.r;
@@ -54,10 +54,9 @@ ImageWrapper ConvolutionFilter<T>::operator()(const ImageWrapper & input) {
                 }
             }
             const RGBA32 anchor = input(x, y);
-            RGBA32 out(anchor.ch.a,
-                       static_cast<uint8_t>(clamp(val_r + bias, 0, 255)),
+            RGBA32 out(static_cast<uint8_t>(clamp(val_r + bias, 0, 255)),
                        static_cast<uint8_t>(clamp(val_g + bias, 0, 255)),
-                       static_cast<uint8_t>(clamp(val_b + bias, 0, 255)));
+                       static_cast<uint8_t>(clamp(val_b + bias, 0, 255)), anchor.ch.a);
             output(x, y) = out.qrgb;
         }
     }

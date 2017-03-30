@@ -26,7 +26,7 @@ ImageWrapper GrayScaleFilter::operator()(const ImageWrapper & input) {
                          green_coefficient * in_px.ch.g +
                          blue_coefficient * in_px.ch.b;
 
-            RGBA32 out_px(in_px.ch.a, gray, gray, gray);
+            RGBA32 out_px(gray, gray, gray, in_px.ch.a);
             output(x, y) = out_px.qrgb;
         }
     }

@@ -9,10 +9,7 @@ ImageWrapper GammaCorrectionFilter::operator()(const ImageWrapper & input) {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             const RGBA32 in(input(x, y));
-            const RGBA32 out(in.ch.a,
-                             corrected_value(in.ch.r),
-                             corrected_value(in.ch.g),
-                             corrected_value(in.ch.b));
+            const RGBA32 out(corrected_value(in.ch.r), corrected_value(in.ch.g), corrected_value(in.ch.b), in.ch.a);
             output(x, y) = out.qrgb;
         }
     }

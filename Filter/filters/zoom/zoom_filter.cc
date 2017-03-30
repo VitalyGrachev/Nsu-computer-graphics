@@ -49,7 +49,7 @@ ImageWrapper ZoomFilter::operator()(const ImageWrapper & input) {
                         a += in.ch.a;
                     }
                 }
-                output(x, y) = RGBA32(a/win_size, r/win_size, g/win_size, b/win_size).qrgb;
+                output(x, y) = RGBA32(r / win_size, g / win_size, b / win_size, a / win_size).qrgb;
             }
         }
     }
