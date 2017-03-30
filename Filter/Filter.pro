@@ -23,7 +23,12 @@ SOURCES += main.cpp \
     filter_action_group_creator.cc \
     filter_applicator.cc \
     filter_runner.cc \
-    image_wrapper.cc
+    image_wrapper.cc \
+    filters/blur/blur_filter.cc \
+    filters/blur/blur_widget.cc \
+    filters/gamma_correction/gamma_correction_filter.cc \
+    filters/gamma_correction/gamma_correction_widget.cc \
+    view/value_setter.cc
 
 HEADERS  += \ 
     filters/zoom/zoom_filter.h \
@@ -45,7 +50,12 @@ HEADERS  += \
     filter_action_group_creator.h \
     filter_applicator.h \
     filter_runner.h \
-    image_wrapper.h
+    image_wrapper.h \
+    filters/blur/blur_filter.h \
+    filters/blur/blur_widget.h \
+    filters/gamma_correction/gamma_correction_filter.h \
+    filters/gamma_correction/gamma_correction_widget.h \
+    view/value_setter.h
 
 OTHER_FILES += \
     Filter.pro.user
