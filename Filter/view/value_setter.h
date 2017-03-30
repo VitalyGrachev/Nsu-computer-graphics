@@ -23,6 +23,8 @@ public:
 
     int value() const { return spin_box->value(); }
 
+    void set_step(int step);
+
 public slots:
 
     void set_value(int val) { spin_box->setValue(val); }

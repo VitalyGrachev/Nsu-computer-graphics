@@ -32,3 +32,8 @@ ValueSetter::ValueSetter(const QString & name,
     connect(slider, &QSlider::valueChanged,
             this, &ValueSetter::value_changed);
 }
+
+void ValueSetter::set_step(int step) {
+    slider->setTickInterval(step);
+    spin_box->setSingleStep(step);
+}
