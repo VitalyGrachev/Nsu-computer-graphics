@@ -27,7 +27,7 @@ private:
 }
 
 ImageWrapper::ImageWrapper()
-        : image(0, 0, QImage::Format_Invalid) {}
+        : image() {}
 
 ImageWrapper::ImageWrapper(int width, int height)
         : image(width, height, QImage::Format_ARGB32) {}
