@@ -3,9 +3,9 @@
 
 #include "../base_filter_widget.h"
 
-class GrayscaleWidget : public BaseFilterWidget {
+class GrayScaleWidget : public BaseFilterWidget {
 public:
-
+    virtual void apply_filter(ImageWrapper input_image) override;
 };
 
 
