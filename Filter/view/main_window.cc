@@ -103,6 +103,7 @@ void MainWindow::create_menus_and_toolbar() {
     menuBar()->addMenu(file_menu);
     menuBar()->addMenu(edit_menu);
     menuBar()->addMenu(filters_menu);
+    menuBar()->addMenu(help_menu);
 
     QToolBar * common_toolbar = new QToolBar(this);
     common_toolbar->setMovable(false);
@@ -111,7 +112,8 @@ void MainWindow::create_menus_and_toolbar() {
     common_toolbar->addAction(save_action);
     common_toolbar->addSeparator();
     common_toolbar->addAction(copy_C_to_B_action);
-
+    common_toolbar->addSeparator();
+    common_toolbar->addAction(about_action);
 
     QToolBar * filters_toolbar = new QToolBar(this);
     filters_toolbar->setMovable(false);
