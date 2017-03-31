@@ -72,7 +72,7 @@ set(SOURCE_FILES
         filters/threshold/threshold_filter.cc
         filters/threshold/threshold_filter.h
         filters/util.h filters/edge_detection/edge_detection_widget.cc
-        filters/edge_detection/edge_detection_widget.h)
+        filters/edge_detection/edge_detection_widget.h filters/rotation/rotation_filter.cc filters/rotation/rotation_filter.h filters/rotation/rotation_widget.cc filters/rotation/rotation_widget.h)
 
 find_package(Qt5Widgets REQUIRED)
 

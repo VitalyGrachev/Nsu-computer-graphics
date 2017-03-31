@@ -38,7 +38,9 @@ SOURCES += main.cpp \
     filters/watercolor/watercolor_widget.cc \
     filters/edge_detection/edge_detection_filter.cc \
     filters/edge_detection/edge_detection_widget.cc \
-    filters/threshold/threshold_filter.cc
+    filters/threshold/threshold_filter.cc \
+    filters/rotation/rotation_filter.cc \
+    filters/rotation/rotation_widget.cc
 
 HEADERS  += \ 
     filters/zoom/zoom_filter.h \
@@ -76,7 +78,9 @@ HEADERS  += \
     filters/edge_detection/edge_detection_filter.h \
     filters/edge_detection/edge_detection_widget.h \
     filters/threshold/threshold_filter.h \
-    filters/util.h
+    filters/util.h \
+    filters/rotation/rotation_filter.h \
+    filters/rotation/rotation_widget.h
 
 OTHER_FILES += \
     Filter.pro.user
