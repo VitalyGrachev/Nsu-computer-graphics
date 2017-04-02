@@ -5,14 +5,17 @@
 
 class RotationFilter : public AbstractFilter {
 public:
-    RotationFilter(int angle_degrees) : angle_rad(pi * angle_degrees / 180) {}
+    RotationFilter(int angle_degrees, int max_width, int max_height);
 
     ImageWrapper operator()(const ImageWrapper & input) override;
 
 private:
-    double angle_rad;
-
     void rotate_vector(float x, float y, float * u, float * v) const;
+
+    const float sin_val;
+    const float cos_val;
+    const int max_width;
+    const int max_height;
 
     static const float pi;
     static const QRgb bg_color;

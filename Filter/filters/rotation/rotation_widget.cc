@@ -21,6 +21,7 @@ RotationWidget::RotationWidget() {
 }
 
 void RotationWidget::apply_filter(ImageWrapper input_image) {
-    std::shared_ptr<AbstractFilter> filter(new RotationFilter(angle_setter->value()));
+    std::shared_ptr<AbstractFilter> filter(
+            new RotationFilter(angle_setter->value(), zone_C->width(), zone_C->height()));
     emit filtrate(filter, input_image, reserve_next_op_id());
 }

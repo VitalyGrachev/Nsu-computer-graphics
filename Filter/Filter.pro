@@ -81,6 +81,3 @@ HEADERS  += \
     filters/util.h \
     filters/rotation/rotation_filter.h \
     filters/rotation/rotation_widget.h
-
-OTHER_FILES += \
-    Filter.pro.user
