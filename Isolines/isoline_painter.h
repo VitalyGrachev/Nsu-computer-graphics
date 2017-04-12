@@ -1,0 +1,36 @@
+#ifndef ISOLINE_PAINTER_H
+#define ISOLINE_PAINTER_H
+
+#include <vector>
+#include <memory>
+#include "image_wrapper.h"
+#include "coordinates_converter.h"
+#include "function_types.h"
+
+class IsolinePainter {
+public:
+    IsolinePainter(const FunctionToDraw & function_to_draw,
+                   std::shared_ptr<CoordinatesConverter> & coordinates_converter,
+                   const QSize & grid_size);
+
+    void set_grid_size(const QSize & grid_size);
+
+    const QSize & get_grid_size() const { return grid_size; }
+
+    void operator()(ImageWrapper & image, float value_level) const;
+
+    void operator()(ImageWrapper & image, int x, int y) const;
+
+    void operator()(ImageWrapper & image, const QPoint & point) const;
+
+    void paint_grid(ImageWrapper & image) const;
+
+private:
+    const FunctionToDraw function_to_draw;
+    std::shared_ptr<CoordinatesConverter> converter;
+    QSize grid_size;
+
+    static const QRgb line_color;
+};
+
+#endif //ISOLINE_PAINTER_H
