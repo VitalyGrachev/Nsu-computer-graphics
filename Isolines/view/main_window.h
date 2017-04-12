@@ -9,7 +9,17 @@ Q_OBJECT
 public:
     MainWindow();
 
+public slots:
+
+    void open_file();
+
+    void about();
+
 private:
+    void create_color_map();
+
+    void create_actions();
+
     ColorMapWidget * color_map_widget;
 };
 
