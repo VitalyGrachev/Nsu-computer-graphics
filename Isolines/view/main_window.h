@@ -13,12 +13,16 @@ public slots:
 
     void open_file();
 
+    void options();
+
     void about();
 
 private:
     void create_color_map();
 
     void create_actions();
+
+    void create_status_bar();
 
     ColorMapWidget * color_map_widget;
 };

@@ -23,15 +23,19 @@ public:
     ColorMapWidget & operator=(const ColorMapWidget &) = delete;
 
 signals:
-    void hovered(float x, float y, float value);
+    void show_status(const QString & status, int timeout);
+
+    void clear_status();
 
 public slots:
 
-    void set_colors(const std::vector<QRgb> & colors);
+    void set_show_isolines(bool show_isolines = true);
 
     void set_draw_grid(bool draw_grid = true);
 
     void set_interpolate_colors(bool interpolate_colors = true);
+
+    void set_colors(const std::vector<QRgb> & colors);
 
     void set_domain(const QRectF & domain);
 
@@ -39,6 +43,12 @@ protected:
     virtual void paintEvent(QPaintEvent * event) override;
 
     virtual void resizeEvent(QResizeEvent * event) override;
+
+    virtual void mouseMoveEvent(QMouseEvent * event) override;
+
+    virtual void enterEvent(QEvent * event) override;
+
+    virtual void leaveEvent(QEvent * event) override;
 
 private:
     void update_images();
@@ -54,6 +64,8 @@ private:
     std::vector<float> isoline_levels;
     bool draw_grid;
     bool interpolate_colors;
+    bool show_isolines;
+    bool status_enabled;
 };
 
 #endif //COLOR_MAP_WIDGET_H
