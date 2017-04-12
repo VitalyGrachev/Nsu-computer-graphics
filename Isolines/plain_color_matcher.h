@@ -9,6 +9,8 @@ public:
                       std::shared_ptr<CoordinatesConverter> converter,
                       const std::vector<QRgb> & colors);
 
+    PlainColorMatcher(float min, float max, const std::vector<QRgb> & colors);
+
     virtual QRgb operator()(float function_value) const override;
 };
 

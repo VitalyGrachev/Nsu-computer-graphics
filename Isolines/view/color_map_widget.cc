@@ -21,6 +21,7 @@ ColorMapWidget::ColorMapWidget(const FunctionToDraw & function_to_draw,
     color_matchers[1] = std::shared_ptr<ColorMatcher>(new SmoothColorMatcher(function_to_draw,
                                                                              coordinates_converter,
                                                                              colors));
+    update_images();
     setMouseTracking(true);
 }
 

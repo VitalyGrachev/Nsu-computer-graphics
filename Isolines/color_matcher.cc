@@ -7,6 +7,9 @@ ColorMatcher::ColorMatcher(const FunctionToDraw & function_to_draw,
     recalc_min_max(function_to_draw, converter);
 }
 
+ColorMatcher::ColorMatcher(float min, float max, const std::vector<QRgb> & colors)
+        : colors(colors), min(min), max(max), step((max - min) / colors.size()) {}
+
 void ColorMatcher::recalc_min_max(const FunctionToDraw & function_to_draw,
                                   std::shared_ptr<CoordinatesConverter> converter) {
     const QSize & size = converter->get_screen_size();

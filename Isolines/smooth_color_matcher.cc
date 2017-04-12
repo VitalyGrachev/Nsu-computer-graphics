@@ -6,10 +6,13 @@ SmoothColorMatcher::SmoothColorMatcher(const FunctionToDraw & function_to_draw,
                                        const std::vector<QRgb> & colors)
         : ColorMatcher(function_to_draw, converter, colors) {}
 
+SmoothColorMatcher::SmoothColorMatcher(float min, float max, const std::vector<QRgb> & colors)
+        : ColorMatcher(min, max, colors) {}
+
 QRgb SmoothColorMatcher::operator()(float function_value) const {
     const float exact_idx = (function_value - min) / step;
     const int color_idx = static_cast<int>(exact_idx);
-    if(color_idx == colors.size() - 1) {
+    if (color_idx == colors.size() - 1) {
         return colors[color_idx];
     }
     const RGBA32 c1 = colors[color_idx];

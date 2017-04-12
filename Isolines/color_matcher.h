@@ -13,6 +13,8 @@ public:
                  std::shared_ptr<CoordinatesConverter> converter,
                  const std::vector<QRgb> & colors);
 
+    ColorMatcher(float min, float max, const std::vector<QRgb> & colors);
+
     void recalc_min_max(const FunctionToDraw & function_to_draw,
                         std::shared_ptr<CoordinatesConverter> converter);
 

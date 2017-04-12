@@ -6,6 +6,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QMessageBox>
+#include <QtWidgets/QVBoxLayout>
 
 namespace {
 static const std::vector<QRgb> default_colors({QColor(0, 0, 255).rgb(),
@@ -17,7 +18,7 @@ static const std::vector<QRgb> default_colors({QColor(0, 0, 255).rgb(),
 }
 
 MainWindow::MainWindow() {
-    create_color_map();
+    create_central_widget();
     create_actions();
     create_status_bar();
 
@@ -25,16 +26,24 @@ MainWindow::MainWindow() {
     resize(800, 600);
 }
 
-void MainWindow::create_color_map() {
+void MainWindow::create_central_widget() {
 //    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float { return pt.x() + pt.y(); };
     FunctionToDraw function_to_draw = [](const QPointF & pt) -> float {
         return (2 * pt.x() - 55.0f) * (pt.x() + 17.5f) +
                0.25 * std::sin(0.7 * pt.y()) * (pt.y() - 15.0f) * (pt.y() + 7.5f);
     };
     QRectF domain(-55.0f, -55.0f, 125.0f, 125.0f);
-    QSize grid_size(10, 10);
-    color_map_widget = new ColorMapWidget(function_to_draw, domain, grid_size, default_colors);
-    setCentralWidget(color_map_widget);
+    QSize grid_size(50, 50);
+
+    QWidget * central_widget = new QWidget(this);
+    QVBoxLayout * layout = new QVBoxLayout(central_widget);
+
+    layout->addWidget(color_map_widget = new ColorMapWidget(function_to_draw, domain, grid_size, default_colors));
+    layout->addWidget(legend = new LegendWidget(default_colors));
+
+    layout->setSpacing(10);
+
+    setCentralWidget(central_widget);
 }
 
 void MainWindow::create_actions() {
@@ -54,6 +63,9 @@ void MainWindow::create_actions() {
     interpolate_action->setCheckable(true);
     connect(interpolate_action, &QAction::triggered,
             color_map_widget, &ColorMapWidget::set_interpolate_colors);
+    connect(interpolate_action, &QAction::triggered,
+            legend, &LegendWidget::set_interpolate_colors);
+
 
     QAction * show_grid_action = new QAction(tr("Show grid"), this);
     show_grid_action->setCheckable(true);
@@ -92,6 +104,7 @@ void MainWindow::create_actions() {
     tool_bar->addAction(show_isolines_action);
     tool_bar->addAction(about_action);
 
+    tool_bar->setMovable(false);
     addToolBar(tool_bar);
 }
 
