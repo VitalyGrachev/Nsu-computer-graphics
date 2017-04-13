@@ -75,6 +75,9 @@ public:
     void draw_line(int x1, int y1, int x2, int y2,
                    const QRgb & color, LineType type = LineType::DOTTED);
 
+    void draw_line(const QPoint & pt1, const QPoint & pt2,
+                   const QRgb & color, LineType type = LineType::DOTTED);
+
     ImageWrapper copy(const QRect & rect = QRect()) const;
 
     void insert_image(const ImageWrapper & to_insert, int left_top_x, int left_top_y);

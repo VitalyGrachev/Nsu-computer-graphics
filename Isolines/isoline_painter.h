@@ -26,11 +26,14 @@ public:
     void paint_grid(ImageWrapper & image) const;
 
 private:
+    void handle_single_cell(ImageWrapper & image, const QRect & cell, float value_level) const;
+
     const FunctionToDraw function_to_draw;
     std::shared_ptr<CoordinatesConverter> converter;
     QSize grid_size;
 
     static const QRgb line_color;
+    static const QRgb grid_color;
 };
 
 #endif //ISOLINE_PAINTER_H

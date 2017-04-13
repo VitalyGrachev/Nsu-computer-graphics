@@ -13,8 +13,8 @@ public:
         if (line_type == LineType::SOLID) {
             should_draw = true;
         } else if (line_type == LineType::DOTTED) {
-            should_draw = state < 4;
-            state = (state + 1) % 8;
+            should_draw = state < 3;
+            state = (state + 1) % 6;
         }
         return should_draw;
     }
@@ -160,6 +160,11 @@ void ImageWrapper::draw_line(int x1, int y1, int x2, int y2,
     } else {
         draw_line_bresenham(x1, y1, x2, y2, color, type);
     }
+}
+
+void ImageWrapper::draw_line(const QPoint & pt1, const QPoint & pt2,
+                             const QRgb & color, LineType type) {
+    draw_line(pt1.x(), pt1.y(), pt2.x(), pt2.y(), color, type);
 }
 
 void ImageWrapper::fill(const QRgb & color) {

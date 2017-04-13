@@ -6,7 +6,8 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QMessageBox>
-#include <QtWidgets/QVBoxLayout>
+#include <QVBoxLayout>
+#include <QWidget>
 
 namespace {
 static const std::vector<QRgb> default_colors({QColor(0, 0, 255).rgb(),
@@ -28,12 +29,13 @@ MainWindow::MainWindow() {
 
 void MainWindow::create_central_widget() {
 //    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float { return pt.x() + pt.y(); };
-    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float {
-        return (2 * pt.x() - 55.0f) * (pt.x() + 17.5f) +
-               0.25 * std::sin(0.7 * pt.y()) * (pt.y() - 15.0f) * (pt.y() + 7.5f);
-    };
+    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float { return pt.x() * pt.x() + pt.y() * pt.y(); };
+//    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float {
+//        return (2 * pt.x() - 55.0f) * (pt.x() + 17.5f) +
+//               0.25 * std::sin(0.7 * pt.y()) * (pt.y() - 15.0f) * (pt.y() + 7.5f);
+//    };
     QRectF domain(-55.0f, -55.0f, 125.0f, 125.0f);
-    QSize grid_size(50, 50);
+    QSize grid_size(70, 70);
 
     QWidget * central_widget = new QWidget(this);
     QVBoxLayout * layout = new QVBoxLayout(central_widget);

@@ -14,7 +14,9 @@ ColorMapWidget::ColorMapWidget(const FunctionToDraw & function_to_draw,
           color_map_painter(function_to_draw, coordinates_converter),
           isoline_painter(function_to_draw, coordinates_converter, grid_size),
           draw_grid(false),
-          interpolate_colors(false) {
+          interpolate_colors(false),
+          show_isolines(false),
+          status_enabled(true) {
     color_matchers[0] = std::shared_ptr<ColorMatcher>(new PlainColorMatcher(function_to_draw,
                                                                             coordinates_converter,
                                                                             colors));
@@ -103,6 +105,10 @@ void ColorMapWidget::update_images() {
         isoline_painter.paint_grid(shown_image);
     }
     if (show_isolines) {
+        IsolineLevelProvider ilp = color_matchers[0]->get_isoline_level_provider();
+        for (int i = 1; i < color_matchers[0]->color_number(); ++i) {
+            isoline_painter(shown_image, ilp[i]);
+        }
         for (float isoline_level : isoline_levels) {
             isoline_painter(shown_image, isoline_level);
         }
