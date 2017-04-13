@@ -9,7 +9,7 @@
 class LegendWidget : public QWidget {
 Q_OBJECT
 public:
-    LegendWidget(const std::vector<QRgb> & colors);
+    LegendWidget(const std::vector<QRgb> & colors, const IsolineLevelProvider & isoline_lvl_provider);
 
     LegendWidget(const LegendWidget &) = delete;
 
@@ -35,6 +35,7 @@ private:
     std::shared_ptr<CoordinatesConverter> coordinates_converter;
     std::array<std::shared_ptr<ColorMatcher>, 2> color_matchers;
     ColorMapPainter color_map_painter;
+    IsolineLevelProvider isoline_lvl_provider;
     bool interpolate_colors;
 };
 

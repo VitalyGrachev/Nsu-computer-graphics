@@ -39,7 +39,7 @@ void MainWindow::create_central_widget() {
     QVBoxLayout * layout = new QVBoxLayout(central_widget);
 
     layout->addWidget(color_map_widget = new ColorMapWidget(function_to_draw, domain, grid_size, default_colors));
-    layout->addWidget(legend = new LegendWidget(default_colors));
+    layout->addWidget(legend = new LegendWidget(default_colors, color_map_widget->get_isoline_level_provider()));
 
     layout->setSpacing(10);
 

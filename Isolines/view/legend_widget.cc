@@ -5,20 +5,30 @@
 #include "../plain_color_matcher.h"
 #include "../smooth_color_matcher.h"
 
-LegendWidget::LegendWidget(const std::vector<QRgb> & colors)
+LegendWidget::LegendWidget(const std::vector<QRgb> & colors, const IsolineLevelProvider & isoline_lvl_provider)
         : coordinates_converter(new CoordinatesConverter(QRectF(0.0f, 0.0f, 1.0f, 1.0f),
                                                          QSize(size().width() - 20, 20))),
           color_map_painter([](const QPointF & pt) { return pt.x(); }, coordinates_converter),
+          isoline_lvl_provider(isoline_lvl_provider),
           interpolate_colors(false) {
     set_colors(colors);
-    setFixedHeight(50);
-    setMinimumWidth(50);
+    setFixedHeight(60);
+    setMinimumWidth(60);
     update_image();
 }
 
 void LegendWidget::paintEvent(QPaintEvent * event) {
     QPainter painter(this);
-    painter.drawImage(10, 10, shown_image.to_QImage());
+    painter.drawImage(15, 15, shown_image.to_QImage());
+
+    painter.setFont(QFont("Arial", 8));
+    const int color_count = color_matchers[0]->color_number();
+    const int diff = shown_image.width() / color_count;
+    for (int i = 1; i < color_count; ++i) {
+        QString level = QString::number(isoline_lvl_provider[i], 'g', 5);
+        QRect rect(i * diff, 35, 40, 10);
+        painter.drawText(rect, Qt::AlignHCenter, level);
+    }
     event->accept();
 }
 

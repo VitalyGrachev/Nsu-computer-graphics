@@ -22,7 +22,10 @@ public:
 
     ColorMapWidget & operator=(const ColorMapWidget &) = delete;
 
+    IsolineLevelProvider get_isoline_level_provider() const { return color_matchers[0]->get_isoline_level_provider(); };
+
 signals:
+
     void show_status(const QString & status, int timeout);
 
     void clear_status();

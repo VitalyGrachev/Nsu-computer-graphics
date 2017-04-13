@@ -30,3 +30,7 @@ void ColorMatcher::set_colors(const std::vector<QRgb> & colors) {
     this->colors = colors;
     this->step = (max - min) / colors.size();
 }
+
+IsolineLevelProvider ColorMatcher::get_isoline_level_provider() {
+    return IsolineLevelProvider(min, max, step);
+}
