@@ -12,11 +12,7 @@ ColorMapWidget::ColorMapWidget(const FunctionToDraw & function_to_draw,
         : function_to_draw(function_to_draw),
           coordinates_converter(new CoordinatesConverter(domain, size())),
           color_map_painter(function_to_draw, coordinates_converter),
-          isoline_painter(function_to_draw, coordinates_converter, grid_size),
-          draw_grid(false),
-          interpolate_colors(false),
-          show_isolines(false),
-          status_enabled(true) {
+          isoline_painter(function_to_draw, coordinates_converter, grid_size) {
     color_matchers[0] = std::shared_ptr<ColorMatcher>(new PlainColorMatcher(function_to_draw,
                                                                             coordinates_converter,
                                                                             colors));
@@ -54,17 +50,51 @@ void ColorMapWidget::enterEvent(QEvent * event) {
 }
 
 void ColorMapWidget::mouseMoveEvent(QMouseEvent * event) {
+    QPointF pos = (*coordinates_converter)(event->pos());
+    float value = function_to_draw(pos);
     if (status_enabled) {
-        QPointF pos = (*coordinates_converter)(event->pos());
-        float value = function_to_draw(pos);
         QString status = QString("Position: (%1, %2) Value: %3")
                 .arg(QString::number(pos.x(), 'g', 4))
                 .arg(QString::number(pos.y(), 'g', 4))
-                .arg(QString::number(value, 'g', 4));
+                .arg(QString::number(value, 'g', 6));
         emit show_status(status, 0);
+    }
+//    if (show_isolines && dynamic_isoline) {
+//        shown_image = color_map;
+//        if(!isoline_levels.empty()) {
+//            isoline_levels.pop_back();
+//        }
+//        isoline_levels.push_back(value);
+//        draw_isolines();
+//        update();
+//    }
+    event->accept();
+}
+
+void ColorMapWidget::mousePressEvent(QMouseEvent * event) {
+    if (show_isolines && event->button() == Qt::LeftButton) {
+        dynamic_isoline = true;
+//        QPointF pos = (*coordinates_converter)(event->pos());
+//        float value = function_to_draw(pos);
+//        isoline_levels.push_back(value);
+//        update_images();
+//        draw_isolines();
+//        update();
     }
     event->accept();
 }
+
+void ColorMapWidget::mouseReleaseEvent(QMouseEvent * event) {
+    if (show_isolines && event->button() == Qt::LeftButton) {
+        dynamic_isoline = false;
+        QPointF pos = (*coordinates_converter)(event->pos());
+        float value = function_to_draw(pos);
+        isoline_levels.push_back(value);
+        update_images();
+        update();
+    }
+    event->accept();
+};
 
 void ColorMapWidget::set_draw_grid(bool draw_grid) {
     this->draw_grid = draw_grid;
@@ -80,6 +110,9 @@ void ColorMapWidget::set_interpolate_colors(bool interpolate_colors) {
 
 void ColorMapWidget::set_show_isolines(bool show_isolines) {
     this->show_isolines = show_isolines;
+    if(!show_isolines) {
+        isoline_levels.clear();
+    }
     update_images();
     update();
 }
@@ -114,13 +147,17 @@ void ColorMapWidget::update_images() {
         isoline_painter.paint_grid(shown_image);
     }
     if (show_isolines) {
-        IsolineLevelProvider ilp = color_matchers[0]->get_isoline_level_provider();
-        for (int i = 1; i < color_matchers[0]->color_number(); ++i) {
-            isoline_painter(shown_image, ilp[i]);
-        }
-        for (float isoline_level : isoline_levels) {
-            isoline_painter(shown_image, isoline_level);
-        }
+        draw_isolines();
+    }
+}
+
+void ColorMapWidget::draw_isolines() {
+    IsolineLevelProvider ilp = color_matchers[0]->get_isoline_level_provider();
+    for (int i = 1; i < color_matchers[0]->color_number(); ++i) {
+        isoline_painter(shown_image, ilp[i]);
+    }
+    for (float isoline_level : isoline_levels) {
+        isoline_painter(shown_image, isoline_level);
     }
 }
 
@@ -134,4 +171,4 @@ QSize ColorMapWidget::get_grid_size() const {
 
 IsolineLevelProvider ColorMapWidget::get_isoline_level_provider() const {
     return color_matchers[0]->get_isoline_level_provider();
-};
+}

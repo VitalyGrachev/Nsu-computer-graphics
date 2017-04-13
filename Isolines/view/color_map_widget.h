@@ -55,12 +55,18 @@ protected:
 
     virtual void mouseMoveEvent(QMouseEvent * event) override;
 
+    virtual void mousePressEvent(QMouseEvent * event) override;
+
+    virtual void mouseReleaseEvent(QMouseEvent * event) override;
+
     virtual void enterEvent(QEvent * event) override;
 
     virtual void leaveEvent(QEvent * event) override;
 
 private:
     void update_images();
+
+    void draw_isolines();
 
     ImageWrapper shown_image;
     ImageWrapper color_map;
@@ -71,10 +77,11 @@ private:
     ColorMapPainter color_map_painter;
     IsolinePainter isoline_painter;
     std::vector<float> isoline_levels;
-    bool draw_grid;
-    bool interpolate_colors;
-    bool show_isolines;
-    bool status_enabled;
+    bool draw_grid = false;
+    bool interpolate_colors = false;
+    bool show_isolines = false;
+    bool status_enabled = true;
+    bool dynamic_isoline = false;
 };
 
 #endif //COLOR_MAP_WIDGET_H
