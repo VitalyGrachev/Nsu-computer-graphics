@@ -94,6 +94,15 @@ void ColorMapWidget::set_colors(const std::vector<QRgb> & colors) {
 
 void ColorMapWidget::set_domain(const QRectF & domain) {
     coordinates_converter->set_world_domain(domain);
+    for (auto & matcher : color_matchers) {
+        matcher->recalc_min_max(function_to_draw, coordinates_converter);
+    }
+    update_images();
+    update();
+}
+
+void ColorMapWidget::set_grid_size(const QSize & grid_size) {
+    isoline_painter.set_grid_size(grid_size);
     update_images();
     update();
 }
@@ -114,3 +123,15 @@ void ColorMapWidget::update_images() {
         }
     }
 }
+
+QRectF ColorMapWidget::get_domain() const {
+    return coordinates_converter->get_world_domain();
+}
+
+QSize ColorMapWidget::get_grid_size() const {
+    return isoline_painter.get_grid_size();
+}
+
+IsolineLevelProvider ColorMapWidget::get_isoline_level_provider() const {
+    return color_matchers[0]->get_isoline_level_provider();
+};

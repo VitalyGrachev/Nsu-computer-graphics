@@ -22,7 +22,11 @@ public:
 
     ColorMapWidget & operator=(const ColorMapWidget &) = delete;
 
-    IsolineLevelProvider get_isoline_level_provider() const { return color_matchers[0]->get_isoline_level_provider(); };
+    QRectF get_domain() const;
+
+    QSize get_grid_size() const;
+
+    IsolineLevelProvider get_isoline_level_provider() const;
 
 signals:
 
@@ -41,6 +45,8 @@ public slots:
     void set_colors(const std::vector<QRgb> & colors);
 
     void set_domain(const QRectF & domain);
+
+    void set_grid_size(const QSize & grid_size);
 
 protected:
     virtual void paintEvent(QPaintEvent * event) override;

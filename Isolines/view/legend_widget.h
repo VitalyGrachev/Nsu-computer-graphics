@@ -28,8 +28,9 @@ public slots:
 
     void set_colors(const std::vector<QRgb> & colors);
 
-private:
     void update_image();
+
+private:
 
     ImageWrapper shown_image;
     std::shared_ptr<CoordinatesConverter> coordinates_converter;

@@ -1,4 +1,5 @@
 #include "main_window.h"
+#include "options_dialog.h"
 
 #include <QAction>
 #include <QMenu>
@@ -16,6 +17,18 @@ static const std::vector<QRgb> default_colors({QColor(0, 0, 255).rgb(),
                                                QColor(255, 255, 0).rgb(),
                                                QColor(255, 127, 0).rgb(),
                                                QColor(255, 0, 0).rgb()});
+static const QRectF default_domain(-55.0f, -55.0f, 125.0f, 125.0f);
+
+static const QSize default_grid_size(70, 70);
+
+static const FunctionToDraw function_to_draw1 = [](const QPointF & pt) -> float { return pt.x() + pt.y(); };
+static const FunctionToDraw function_to_draw2 = [](const QPointF & pt) -> float {
+    return pt.x() * pt.x() + pt.y() * pt.y();
+};
+static const FunctionToDraw function_to_draw3 = [](const QPointF & pt) -> float {
+    return (2 * pt.x() - 55.0f) * (pt.x() + 17.5f) +
+           0.25 * std::sin(0.7 * pt.y()) * (pt.y() - 15.0f) * (pt.y() + 7.5f);
+};
 }
 
 MainWindow::MainWindow() {
@@ -28,19 +41,12 @@ MainWindow::MainWindow() {
 }
 
 void MainWindow::create_central_widget() {
-//    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float { return pt.x() + pt.y(); };
-    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float { return pt.x() * pt.x() + pt.y() * pt.y(); };
-//    FunctionToDraw function_to_draw = [](const QPointF & pt) -> float {
-//        return (2 * pt.x() - 55.0f) * (pt.x() + 17.5f) +
-//               0.25 * std::sin(0.7 * pt.y()) * (pt.y() - 15.0f) * (pt.y() + 7.5f);
-//    };
-    QRectF domain(-55.0f, -55.0f, 125.0f, 125.0f);
-    QSize grid_size(70, 70);
-
     QWidget * central_widget = new QWidget(this);
     QVBoxLayout * layout = new QVBoxLayout(central_widget);
 
-    layout->addWidget(color_map_widget = new ColorMapWidget(function_to_draw, domain, grid_size, default_colors));
+    layout->addWidget(
+            color_map_widget = new ColorMapWidget(function_to_draw2, default_domain, default_grid_size,
+                                                  default_colors));
     layout->addWidget(legend = new LegendWidget(default_colors, color_map_widget->get_isoline_level_provider()));
 
     layout->setSpacing(10);
@@ -124,7 +130,16 @@ void MainWindow::open_file() {
 }
 
 void MainWindow::options() {
+    QScopedPointer<OptionsDialog> dialog(new OptionsDialog(color_map_widget->get_domain(),
+                                                           color_map_widget->get_grid_size(), this));
+    connect(dialog.data(), &OptionsDialog::set_domain,
+            color_map_widget, &ColorMapWidget::set_domain);
+    connect(dialog.data(), &OptionsDialog::set_grid_size,
+            color_map_widget, &ColorMapWidget::set_grid_size);
+    connect(dialog.data(), &OptionsDialog::set_domain,
+            legend, &LegendWidget::update_image);
 
+    dialog->exec();
 }
 
 void MainWindow::about() {
