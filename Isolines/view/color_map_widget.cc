@@ -59,27 +59,25 @@ void ColorMapWidget::mouseMoveEvent(QMouseEvent * event) {
                 .arg(QString::number(value, 'g', 6));
         emit show_status(status, 0);
     }
-//    if (show_isolines && dynamic_isoline) {
-//        shown_image = color_map;
-//        if(!isoline_levels.empty()) {
-//            isoline_levels.pop_back();
-//        }
-//        isoline_levels.push_back(value);
-//        draw_isolines();
-//        update();
-//    }
+    if (show_isolines && dynamic_isoline) {
+        shown_image = color_map;
+        if (!isoline_levels.empty()) {
+            isoline_levels.pop_back();
+        }
+        isoline_levels.push_back(value);
+        draw_isolines();
+        update();
+    }
     event->accept();
 }
 
 void ColorMapWidget::mousePressEvent(QMouseEvent * event) {
     if (show_isolines && event->button() == Qt::LeftButton) {
         dynamic_isoline = true;
-//        QPointF pos = (*coordinates_converter)(event->pos());
-//        float value = function_to_draw(pos);
-//        isoline_levels.push_back(value);
-//        update_images();
-//        draw_isolines();
-//        update();
+        QPointF pos = (*coordinates_converter)(event->pos());
+        float value = function_to_draw(pos);
+        isoline_levels.push_back(value);
+        update_images();
     }
     event->accept();
 }
@@ -89,9 +87,11 @@ void ColorMapWidget::mouseReleaseEvent(QMouseEvent * event) {
         dynamic_isoline = false;
         QPointF pos = (*coordinates_converter)(event->pos());
         float value = function_to_draw(pos);
+        if (!isoline_levels.empty()) {
+            isoline_levels.pop_back();
+        }
         isoline_levels.push_back(value);
         update_images();
-        update();
     }
     event->accept();
 };
@@ -99,22 +99,19 @@ void ColorMapWidget::mouseReleaseEvent(QMouseEvent * event) {
 void ColorMapWidget::set_draw_grid(bool draw_grid) {
     this->draw_grid = draw_grid;
     update_images();
-    update();
 }
 
 void ColorMapWidget::set_interpolate_colors(bool interpolate_colors) {
     this->interpolate_colors = interpolate_colors;
     update_images();
-    update();
 }
 
 void ColorMapWidget::set_show_isolines(bool show_isolines) {
     this->show_isolines = show_isolines;
-    if(!show_isolines) {
+    if (!show_isolines) {
         isoline_levels.clear();
     }
     update_images();
-    update();
 }
 
 void ColorMapWidget::set_colors(const std::vector<QRgb> & colors) {
@@ -122,7 +119,6 @@ void ColorMapWidget::set_colors(const std::vector<QRgb> & colors) {
         matcher->set_colors(colors);
     }
     update_images();
-    update();
 }
 
 void ColorMapWidget::set_domain(const QRectF & domain) {
@@ -131,24 +127,23 @@ void ColorMapWidget::set_domain(const QRectF & domain) {
         matcher->recalc_min_max(function_to_draw, coordinates_converter);
     }
     update_images();
-    update();
 }
 
 void ColorMapWidget::set_grid_size(const QSize & grid_size) {
     isoline_painter.set_grid_size(grid_size);
     update_images();
-    update();
 }
 
 void ColorMapWidget::update_images() {
     color_map = color_map_painter(color_matchers[interpolate_colors]);
-    shown_image = color_map;
     if (draw_grid) {
-        isoline_painter.paint_grid(shown_image);
+        isoline_painter.paint_grid(color_map);
     }
+    shown_image = color_map;
     if (show_isolines) {
         draw_isolines();
     }
+    update();
 }
 
 void ColorMapWidget::draw_isolines() {

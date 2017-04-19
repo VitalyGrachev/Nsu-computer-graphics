@@ -142,7 +142,9 @@ void ImageWrapper::draw_line_bresenham(int x1, int y1, int x2, int y2,
     }
 
     for (v = v_min; v <= v_max; ++v) {
-        (*this)(x, y) = color;
+        if (contains(x, y)) {
+            (*this)(x, y) = color;
+        }
         error += delta_err;
         if (2 * error >= err_denom) {
             u += sign;

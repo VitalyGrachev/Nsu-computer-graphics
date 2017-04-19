@@ -28,6 +28,11 @@ public:
 private:
     void handle_single_cell(ImageWrapper & image, const QRect & cell, float value_level) const;
 
+    void handle_single_cell_slow(ImageWrapper & image, const QRect & cell, float value_level) const;
+
+    QPoint find_cross_point(const QPoint & pt1, const QPoint & pt2,
+                            float value1, float value2, float isoline_level, int max_iterations = 15) const;
+
     const FunctionToDraw function_to_draw;
     std::shared_ptr<CoordinatesConverter> converter;
     QSize grid_size;

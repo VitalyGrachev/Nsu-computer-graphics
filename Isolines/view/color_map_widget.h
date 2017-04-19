@@ -3,6 +3,7 @@
 
 #include <array>
 #include <QWidget>
+#include <deque>
 #include "../image_wrapper.h"
 #include "../isoline_painter.h"
 #include "../color_map_painter.h"
@@ -76,7 +77,7 @@ private:
     std::array<std::shared_ptr<ColorMatcher>, 2> color_matchers;
     ColorMapPainter color_map_painter;
     IsolinePainter isoline_painter;
-    std::vector<float> isoline_levels;
+    std::deque<float> isoline_levels;
     bool draw_grid = false;
     bool interpolate_colors = false;
     bool show_isolines = false;

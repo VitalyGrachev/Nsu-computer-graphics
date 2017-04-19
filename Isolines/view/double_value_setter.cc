@@ -26,8 +26,8 @@ DoubleValueSetter::DoubleValueSetter(const QString & name,
             this, SLOT(change_spinbox_value(int)));
 
     layout->addWidget(label);
-    layout->addWidget(spin_box);
     layout->addWidget(slider);
+    layout->addWidget(spin_box);
 }
 
 void DoubleValueSetter::change_slider_value(double value) {

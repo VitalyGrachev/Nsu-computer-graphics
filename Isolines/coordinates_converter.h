@@ -49,8 +49,8 @@ inline QPointF CoordinatesConverter::operator()(const QPoint & screen) const {
 }
 
 inline QPointF CoordinatesConverter::operator()(float x, float y) const {
-    const float xx = world_domain.x() + world_step_x * x;
-    const float yy = world_domain.y() + world_step_y * (screen_size.height() - y);
+    const float xx = world_domain.x() + world_step_x * (x + 0.5f);
+    const float yy = world_domain.y() + world_step_y * (screen_size.height() - y + 0.5f);
     return QPointF(xx, yy);
 }
 

@@ -26,8 +26,8 @@ OptionsDialog::OptionsDialog(const QRectF & cur_domain,
     QGroupBox * grid_group = new QGroupBox(tr("Grid"), this);
 
     QLayout * domain_layout = new QVBoxLayout(domain_group);
-    domain_layout->addWidget(domain_left_setter = new DoubleValueSetter(tr("Left"), min_x, max_x, 0.5));
-    domain_layout->addWidget(domain_top_setter = new DoubleValueSetter(tr("Top"), min_y, max_y, 0.5));
+    domain_layout->addWidget(domain_left_setter = new DoubleValueSetter(tr("X0"), min_x, max_x, 0.5));
+    domain_layout->addWidget(domain_top_setter = new DoubleValueSetter(tr("Y0"), min_y, max_y, 0.5));
     domain_layout->addWidget(domain_width_setter = new DoubleValueSetter(tr("Width"), min_width, max_width, 0.5));
     domain_layout->addWidget(domain_height_setter = new DoubleValueSetter(tr("Height"), min_height, max_height, 0.5));
 

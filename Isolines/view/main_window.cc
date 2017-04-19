@@ -5,10 +5,13 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QToolBar>
+#include <QFileDialog>
 #include <QStatusBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QSize>
+#include <QTextStream>
 
 namespace {
 static const std::vector<QRgb> default_colors({QColor(0, 0, 255).rgb(),
@@ -17,18 +20,27 @@ static const std::vector<QRgb> default_colors({QColor(0, 0, 255).rgb(),
                                                QColor(255, 255, 0).rgb(),
                                                QColor(255, 127, 0).rgb(),
                                                QColor(255, 0, 0).rgb()});
-static const QRectF default_domain(-55.0f, -55.0f, 125.0f, 125.0f);
+static const QRectF default_domain(-15.0f, -15.0f, 25.0f, 25.0f);
 
-static const QSize default_grid_size(70, 70);
+static const QSize default_grid_size(25, 25);
 
-static const FunctionToDraw function_to_draw1 = [](const QPointF & pt) -> float { return pt.x() + pt.y(); };
+static const FunctionToDraw function_to_draw1 = [](const QPointF & pt) -> float {
+    return std::sin(pt.x()) + std::cos(pt.y());
+};
+
 static const FunctionToDraw function_to_draw2 = [](const QPointF & pt) -> float {
     return pt.x() * pt.x() + pt.y() * pt.y();
 };
+
 static const FunctionToDraw function_to_draw3 = [](const QPointF & pt) -> float {
     return (2 * pt.x() - 55.0f) * (pt.x() + 17.5f) +
            0.25 * std::sin(0.7 * pt.y()) * (pt.y() - 15.0f) * (pt.y() + 7.5f);
 };
+
+static const FunctionToDraw function_to_draw4 = [](const QPointF & pt) -> float {
+    return 2 * pt.x() + pt.y();
+};
+
 }
 
 MainWindow::MainWindow() {
@@ -126,7 +138,94 @@ void MainWindow::create_status_bar() {
 }
 
 void MainWindow::open_file() {
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "./",
+                                                    "Parameters(*.txt);;All files(*.*)");
+    if (!filename.isEmpty()) {
+        QFile file(filename);
+        try {
+            if (file.open(QIODevice::ReadOnly)) {
+                bool ok = false;
+                QTextStream input(&file);
 
+                QString line = input.readLine();
+                QStringList line_parts = line.split(' ');
+                if (line.isNull()) {
+                    throw std::runtime_error("Unexpected end of file.");
+                }
+                if (line_parts.size() < 2) {
+                    throw std::runtime_error("Grid cols and/or rows number not stated");
+                }
+                uint32_t grid_cols = line_parts[0].toUInt(&ok);
+                if (!ok || grid_cols < 2 || grid_cols > 100) {
+                    throw std::runtime_error("Invalid value instead of grid cols number.");
+                }
+                uint32_t grid_rows = line_parts[1].toUInt(&ok);
+                if (!ok || grid_rows < 2 || grid_rows > 100) {
+                    throw std::runtime_error("Invalid value instead of grid rows number.");
+                }
+                if (line_parts.size() > 2 && !line_parts[2].startsWith("//")) {
+                    throw std::runtime_error("Found garbage after rows and cols numbers.");
+                }
+
+                line = input.readLine();
+                line_parts = line.split(' ');
+                if (line.isNull()) {
+                    throw std::runtime_error("Unexpected end of file.");
+                }
+                if (line_parts.size() < 1) {
+                    throw std::runtime_error("Color count not stated");
+                }
+                uint32_t color_count = line_parts[0].toUInt(&ok);
+                if (!ok || color_count < 2 || color_count > 10) {
+                    throw std::runtime_error("Invalid value instead of color count.");
+                }
+                if (line_parts.size() > 1 && !line_parts[1].startsWith("//")) {
+                    throw std::runtime_error("Found garbage after color count.");
+                }
+
+                std::vector<QRgb> colors(color_count);
+                for (uint32_t i = 0; i < color_count; ++i) {
+                    line = input.readLine();
+                    line_parts = line.split(' ');
+                    if (line.isNull()) {
+                        throw std::runtime_error("Unexpected end of file.");
+                    }
+                    if (line_parts.size() < 3) {
+                        throw std::runtime_error("Grid cols and/or rows number not stated");
+                    }
+                    uint32_t red = line_parts[0].toUInt(&ok);
+                    if (!ok || red > 255) {
+                        throw std::runtime_error("Invalid value instead of red color value.");
+                    }
+                    uint32_t green = line_parts[1].toUInt(&ok);
+                    if (!ok || green > 255) {
+                        throw std::runtime_error("Invalid value instead of green color value.");
+                    }
+                    uint32_t blue = line_parts[2].toUInt(&ok);
+                    if (!ok || blue > 255) {
+                        throw std::runtime_error("Invalid value instead of blue color value.");
+                    }
+                    if (line_parts.size() > 3 && !line_parts[3].startsWith("//")) {
+                        throw std::runtime_error("Found garbage after color values.");
+                    }
+
+                    colors[i] = QColor(red, green, blue).rgb();
+                }
+
+                if (!input.atEnd()) {
+                    throw std::runtime_error("Found garbage at end of file.");
+                }
+
+                color_map_widget->set_grid_size(QSize(grid_cols, grid_rows));
+                color_map_widget->set_colors(colors);
+                legend->set_colors(colors);
+            }
+        } catch (std::runtime_error & e) {
+            QMessageBox::warning(this, tr("Error in file"),
+                                 tr("File cannot be read due to error: ") + tr(e.what()));
+        }
+    }
 }
 
 void MainWindow::options() {
