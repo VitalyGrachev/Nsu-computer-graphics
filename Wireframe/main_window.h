@@ -5,7 +5,7 @@
 
 class MainWindow : public QMainWindow {
 public:
-    
+
 };
 
 
