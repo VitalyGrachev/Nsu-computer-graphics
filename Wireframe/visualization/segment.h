@@ -4,12 +4,14 @@
 #include <QVector3D>
 
 struct Segment {
-    QVector3D point1;
-    QVector3D point2;
+    QVector4D point1;
+    QVector4D point2;
 
     Segment() = default;
 
-    Segment(const QVector3D & pt1, const QVector3D & pt2) : point1(pt1), point2(pt2) {}
+    Segment(const QVector4D & pt1, const QVector4D & pt2) : point1(pt1), point2(pt2) {}
+
+    Segment(const QVector3D & pt1, const QVector3D & pt2) : point1(pt1, 1.0f), point2(pt2, 1.0f) {}
 
     Segment(const Segment &) = default;
 
