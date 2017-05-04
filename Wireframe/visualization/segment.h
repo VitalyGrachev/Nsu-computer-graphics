@@ -1,7 +1,7 @@
 #ifndef SEGMENT_H
 #define SEGMENT_H
 
-#include <QVector3D>
+#include <QVector4D>
 
 struct Segment {
     QVector4D point1;

@@ -28,11 +28,13 @@ public:
 
     void set_up(const QVector3D & up);
 
-    void set_vertical_fov(float fov);
+    void set_vertical_fov(double fov);
 
-    void set_clip_planes(float near, float far);
+    void set_clip_planes(double near, double far);
 private:
-    void recalc_matrix();
+    void recalculate_matrix();
+
+    QPointF rescale_to_screen(const QPointF & point) const;
 
     std::shared_ptr<Scene> scene_to_look_at;
     QMatrix4x4 camera_transform;
@@ -40,9 +42,9 @@ private:
     QVector3D point_to_look;
     QVector3D up;
     QSize viewport;
-    float vertical_fov;
-    float z_near;
-    float z_far;
+    double vertical_fov;
+    double z_near;
+    double z_far;
     QRgb background_color;
 };
 

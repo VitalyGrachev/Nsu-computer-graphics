@@ -1,16 +1,50 @@
 #include "scene.h"
 
+Scene::Scene()
+        : center_position(0.0, 0.0, 0.0),
+          scale_factor(1.0f) {
+    recalculate_transform();
+}
+
 Scene::~Scene() {
-    for (Object * object : objects) {
+    for (BaseObject * object : objects) {
         delete object;
     }
 }
 
-void Scene::add_object(Object * object) {
+void Scene::add_object(BaseObject * object) {
     objects.push_front(object);
-    recalc_bounding_box();
+    recalculate_bounding_box();
 }
 
-void Scene::recalc_bounding_box() {
+void Scene::remove_object(BaseObject * object) {
+    objects.remove(object);
+    delete object;
+    recalculate_bounding_box();
+}
+
+void Scene::set_position(const QVector3D & center_position) {
+    this->center_position = center_position;
+    recalculate_transform();
+}
+
+void Scene::set_rotation(const QMatrix4x4 & rotation) {
+    this->rotation = rotation;
+    recalculate_transform();
+}
+
+void Scene::set_scale(float scale_factor) {
+    this->scale_factor = scale_factor;
+    recalculate_transform();
+}
+
+void Scene::recalculate_transform() {
+    transform_matrix.setToIdentity();
+    transform_matrix.translate(center_position);
+    transform_matrix *= rotation;
+    transform_matrix.scale(scale_factor);
+}
+
+void Scene::recalculate_bounding_box() {
 
 }
