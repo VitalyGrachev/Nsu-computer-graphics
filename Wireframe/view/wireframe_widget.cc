@@ -29,3 +29,15 @@ void WireframeWidget::update_view() {
     shown_image = camera->take_picture();
     update();
 }
+
+void WireframeWidget::mousePressEvent(QMouseEvent * event) {
+    event->accept();
+}
+
+void WireframeWidget::mouseMoveEvent(QMouseEvent * event) {
+    QWidget::mouseMoveEvent(event);
+}
+
+void WireframeWidget::mouseReleaseEvent(QMouseEvent * event) {
+    QWidget::mouseReleaseEvent(event);
+}

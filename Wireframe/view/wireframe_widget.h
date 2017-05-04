@@ -21,6 +21,12 @@ protected:
 
     void resizeEvent(QResizeEvent * event) override;
 
+    void mousePressEvent(QMouseEvent * event) override;
+
+    void mouseReleaseEvent(QMouseEvent * event) override;
+
+    void mouseMoveEvent(QMouseEvent * event) override;
+
 private:
     ImageWrapper shown_image;
 
