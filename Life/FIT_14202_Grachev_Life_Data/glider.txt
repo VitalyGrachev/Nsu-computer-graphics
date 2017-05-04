@@ -1,0 +1,9 @@
+20 20 // cols rows
+2 // separator width
+20 // cell edge size
+5
+10 10
+11 10
+11 9
+11 8
+10 7
