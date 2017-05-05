@@ -1,5 +1,7 @@
 #include "scene.h"
 
+#include <algorithm>
+
 Scene::Scene()
         : center_position(0.0, 0.0, 0.0),
           scale_factor(1.0f) {
@@ -18,9 +20,12 @@ void Scene::add_object(BaseObject * object) {
 }
 
 void Scene::remove_object(BaseObject * object) {
-    objects.remove(object);
-    delete object;
-    recalculate_bounding_box();
+    auto found = std::find(std::begin(objects), std::end(objects), object);
+    if(found != std::end(objects)) {
+        objects.erase(found);
+        delete object;
+        recalculate_bounding_box();
+    }
 }
 
 void Scene::set_position(const QVector3D & center_position) {

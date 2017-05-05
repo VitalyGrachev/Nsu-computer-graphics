@@ -31,6 +31,9 @@ private:
     ImageWrapper shown_image;
 
     std::shared_ptr<Camera> camera;
+    QPoint last_pos;
+    bool rotating_object = false;
+    bool rotating_scene = false;
 };
 
 #endif //WIREFRAME_WIDGET_H

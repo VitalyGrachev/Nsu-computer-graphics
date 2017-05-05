@@ -31,8 +31,15 @@ public:
     void set_vertical_fov(double fov);
 
     void set_clip_planes(double near, double far);
+
+    void rotate_scene_in_camera_space(const QVector2D & delta);
+
+    void rotate_object_in_camera_space(BaseObject * object, const QVector2D & delta);
+
 private:
-    void recalculate_matrix();
+    void recalculate_params();
+
+    QMatrix4x4 rotation_in_camera_space(const QVector2D & delta) const;
 
     QPointF rescale_to_screen(const QPointF & point) const;
 
@@ -40,6 +47,7 @@ private:
     QMatrix4x4 camera_transform;
     QVector3D position;
     QVector3D point_to_look;
+    QVector3D right;
     QVector3D up;
     QSize viewport;
     double vertical_fov;

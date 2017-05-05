@@ -1,6 +1,7 @@
 #include "camera.h"
 
 #include <QColor>
+#include <QVector2D>
 #include "base_object.h"
 
 namespace {
@@ -14,23 +15,24 @@ double aspect_ratio(double width, double height) {
 Camera::Camera()
         : position(-1.0, 1.0, 0.0),
           point_to_look(0.0, 0.0, 0.0),
+          right(0.0, 0.0, -1.0),
           up(0.0, 1.0, 0.0),
           viewport(800, 600),
           vertical_fov(50.0),
           z_near(0.1f),
           z_far(20.0),
           background_color(QColor(180, 180, 180).rgb()) {
-    recalculate_matrix();
+    recalculate_params();
 }
 
 ImageWrapper Camera::take_picture() const {
     ImageWrapper picture(viewport.width(), viewport.height());
     picture.fill(background_color);
 
-
+    const QMatrix4x4 camera_scene_transform = camera_transform * scene_to_look_at->get_transform();
     for (BaseObject * object : scene_to_look_at->get_objects()) {
         const QRgb color = object->get_color();
-        const QMatrix4x4 mvp = camera_transform * object->get_transform_matrix();
+        const QMatrix4x4 mvp = camera_scene_transform * object->get_transform_matrix();
 
         std::unique_ptr<BaseObject::SegmentProvider> segments(object->get_segment_provider());
         while(segments->has_next()) {
@@ -50,7 +52,7 @@ ImageWrapper Camera::take_picture() const {
 void Camera::set_viewport(const QSize & viewport) {
     this->viewport = viewport;
 
-    recalculate_matrix();
+    recalculate_params();
 }
 
 void Camera::set_scene(std::shared_ptr<Scene> scene) {
@@ -60,35 +62,41 @@ void Camera::set_scene(std::shared_ptr<Scene> scene) {
 void Camera::set_position(const QVector3D & position) {
     this->position = position;
 
-    recalculate_matrix();
+    const QVector3D dir = point_to_look - position;
+    right = QVector3D::crossProduct(up, dir);
+    recalculate_params();
 }
 
 void Camera::set_point_to_look(const QVector3D & point_to_look) {
     this->point_to_look = point_to_look;
 
-    recalculate_matrix();
+    const QVector3D dir = point_to_look - position;
+    right = QVector3D::crossProduct(up, dir);
+    recalculate_params();
 }
 
 void Camera::set_up(const QVector3D & up) {
     this->up = up;
 
-    recalculate_matrix();
+    const QVector3D dir = point_to_look - position;
+    right = QVector3D::crossProduct(up, dir);
+    recalculate_params();
 }
 
 void Camera::set_vertical_fov(double fov) {
     this->vertical_fov = fov;
 
-    recalculate_matrix();
+    recalculate_params();
 }
 
 void Camera::set_clip_planes(double near, double far) {
     this->z_near = near;
     this->z_far = far;
 
-    recalculate_matrix();
+    recalculate_params();
 }
 
-void Camera::recalculate_matrix() {
+void Camera::recalculate_params() {
     const double aspect = aspect_ratio(viewport.width(), viewport.height());
     camera_transform.setToIdentity();
     camera_transform.perspective(vertical_fov, aspect, z_near, z_far);
@@ -101,4 +109,25 @@ QPointF Camera::rescale_to_screen(const QPointF & point) const {
     const double x = (point.x() + 1.0) * x_scale_factor;
     const double y = (point.y() + 1.0) * y_scale_factor;
     return QPointF(x, y);
+}
+
+QMatrix4x4 Camera::rotation_in_camera_space(const QVector2D & delta) const {
+    const float magic = 0.3f;
+    const float angle = magic * delta.length();
+    QVector3D axis = delta.y() * right + delta.x() * up;
+    QMatrix4x4 rotation;
+    rotation.rotate(angle, axis);
+    return rotation;
+}
+
+void Camera::rotate_scene_in_camera_space(const QVector2D & delta) {
+    const QMatrix4x4 & last_rotation = scene_to_look_at->get_rotation();
+    const QMatrix4x4 additional_rotation = rotation_in_camera_space(delta);
+    scene_to_look_at->set_rotation(additional_rotation * last_rotation);
+}
+
+void Camera::rotate_object_in_camera_space(BaseObject * object, const QVector2D & delta) {
+    const QMatrix4x4 & last_rotation = object->get_rotation();
+    const QMatrix4x4 additional_rotation = rotation_in_camera_space(delta);
+    object->set_rotation(additional_rotation * last_rotation);
 }

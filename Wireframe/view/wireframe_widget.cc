@@ -31,13 +31,28 @@ void WireframeWidget::update_view() {
 }
 
 void WireframeWidget::mousePressEvent(QMouseEvent * event) {
+    if (event->button() == Qt::RightButton) {
+        rotating_scene = true;
+    }
+    last_pos = event->pos();
     event->accept();
 }
 
 void WireframeWidget::mouseMoveEvent(QMouseEvent * event) {
-    QWidget::mouseMoveEvent(event);
+    const QPoint act_pos = event->pos();
+    const QVector2D delta(act_pos - last_pos);
+    if (rotating_scene) {
+        camera->rotate_scene_in_camera_space(delta);
+        update_view();
+    } else if (rotating_object) {
+
+    }
+    last_pos = act_pos;
+    event->accept();
 }
 
 void WireframeWidget::mouseReleaseEvent(QMouseEvent * event) {
-    QWidget::mouseReleaseEvent(event);
+    rotating_scene = false;
+    rotating_object = false;
+    event->accept();
 }

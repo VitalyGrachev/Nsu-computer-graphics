@@ -1,12 +1,12 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <forward_list>
+#include <deque>
 #include "base_object.h"
 
 class Scene {
 public:
-    using ObjectsContainer = std::forward_list<BaseObject *>;
+    using ObjectsContainer = std::deque<BaseObject *>;
 
     Scene();
 
