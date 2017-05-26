@@ -8,6 +8,7 @@
 #include <QRgb>
 #include <QVector3D>
 #include "segment.h"
+#include "../util/bounding_box.h"
 
 class BaseObject {
 public:
@@ -36,13 +37,15 @@ public:
 
     virtual SegmentProvider * get_segment_provider() const = 0;
 
-    const QMatrix4x4 & get_transform_matrix() const { return transform_matrix; }
+    const QMatrix4x4 & get_transform() const { return transform_matrix; }
 
     const QMatrix4x4 & get_rotation() const { return rotation; };
 
     const QVector3D & get_position() const { return position; };
 
     const QVector3D & get_scale() const { return scale; };
+
+    const BoundingBox & get_bounds() const { return bounds; }
 
     QRgb get_color() const { return color; }
 
@@ -54,9 +57,15 @@ public:
 
     void set_color(QRgb color);
 
-private:
-    void recalculate_transform();
+protected:
+    void recalculate_bounds(const QVector4D & added_point);
 
+    void recalculate_bounds();
+
+private:
+    BoundingBox bounds;
+
+    void recalculate_transform();
     QMatrix4x4 transform_matrix;
     QMatrix4x4 rotation;
     QVector3D position;

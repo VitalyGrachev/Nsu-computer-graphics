@@ -169,6 +169,12 @@ void ImageWrapper::draw_line(const QPoint & pt1, const QPoint & pt2,
     draw_line(pt1.x(), pt1.y(), pt2.x(), pt2.y(), color, type);
 }
 
+void ImageWrapper::set_pixel(int x, int y, const QRgb & color) {
+    if (contains(x, y)) {
+        (*this)(x, y) = color;
+    }
+}
+
 void ImageWrapper::fill(const QRgb & color) {
     uchar * line_start = image.bits();
     for (int h = 0; h < image.height(); ++h, line_start += image.bytesPerLine()) {
@@ -230,4 +236,30 @@ ImageWrapper ImageWrapper::copy(const QRect & rect) const {
         }
     }
     return copied;
+}
+
+void ImageWrapper::draw_circle(const QPoint & center, int radius, const QRgb & color) {
+    int x = 0;
+    int y = radius;
+    int delta = 1 - 2 * radius;
+    int error = 0;
+    while (y >= 0) {
+        set_pixel(center.x() + x, center.y() + y, color);
+        set_pixel(center.x() + x, center.y() - y, color);
+        set_pixel(center.x() - x, center.y() + y, color);
+        set_pixel(center.x() - x, center.y() - y, color);
+        error = 2 * (delta + y) - 1;
+        if ((delta < 0) && (error <= 0)) {
+            delta += 2 * ++x + 1;
+            continue;
+        }
+        error = 2 * (delta - x) - 1;
+        if ((delta > 0) && (error > 0)) {
+            delta += 1 - 2 * --y;
+            continue;
+        }
+        x++;
+        delta += 2 * (x - y);
+        y--;
+    }
 }

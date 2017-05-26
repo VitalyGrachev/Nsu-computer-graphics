@@ -1,14 +1,26 @@
 #include <iostream>
 #include "main_window.h"
 
-#include "figure/plain_segment_object.h"
 #include "figure/solid_of_revolution.h"
+#include "curve/bspline.h"
 
 MainWindow::MainWindow() {
-    create_scene();
+//    create_scene();
 
-    wireframe = new WireframeWidget(camera);
-    setCentralWidget(wireframe);
+//    wireframe = new WireframeWidget(camera);
+//    setCentralWidget(wireframe);
+
+    std::shared_ptr<BSpline> b_spline(new BSpline(10, 10));
+    b_spline->add_control_point(QPointF(1.0, -1.0));
+    b_spline->add_control_point(QPointF(2.0, -0.5));
+    b_spline->add_control_point(QPointF(2.0, 0.5));
+    b_spline->add_control_point(QPointF(1.0, 1.0));
+    b_spline->add_control_point(QPointF(0.0, 1.0));
+
+    spline = new SplineWidget();
+    spline->set_curve(b_spline);
+
+    setCentralWidget(spline);
 
     QSize min_size(800, 600);
     setMinimumSize(min_size);
@@ -30,7 +42,7 @@ void MainWindow::create_scene() {
     vase->add_point(QPointF(2.0, -3.0));
     vase->add_point(QPointF(1.0, -3.5));
 
-    vase->set_color(QColor(0, 0, 0).rgb());
+    vase->set_color(QColor(0, 150, 250).rgb());
     vase->set_scale(QVector3D(0.05, 0.05, 0.05));
     vase->set_position(QVector3D(0.1, 0.0, -0.3));
     scene->add_object(vase);
@@ -39,7 +51,7 @@ void MainWindow::create_scene() {
     cube->add_point(QPointF(0.7, 0.5));
     cube->add_point(QPointF(0.7, -0.5));
 
-    cube->set_color(QColor(0, 0, 200).rgb());
+    cube->set_color(QColor(0, 150, 250).rgb());
     cube->set_scale(QVector3D(0.3, 0.3, 0.3));
     scene->add_object(cube);
 
@@ -50,37 +62,14 @@ void MainWindow::create_scene() {
     QMatrix4x4 rot;
     rot.rotate(-45, 0, 0, 1);
     pyramid->set_rotation(rot);
-    pyramid->set_color(QColor(0, 0, 0).rgb());
+    pyramid->set_color(QColor(0, 150, 250).rgb());
     pyramid->set_position(QVector3D(0.0, 0.0, 0.3));
     pyramid->set_scale(QVector3D(0.3, 0.3, 0.3));
     scene->add_object(pyramid);
 
-    PlainSegmentObject * axis_x = new PlainSegmentObject(QColor(250, 0, 0).rgb());
-    axis_x->add_segment(Segment(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(1.0f, 0.0f, 0.0f)));
-
-    PlainSegmentObject * axis_y = new PlainSegmentObject(QColor(0, 250, 0).rgb());
-    axis_y->add_segment(Segment(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f)));
-
-    PlainSegmentObject * axis_z = new PlainSegmentObject(QColor(0, 0, 250).rgb());
-    axis_z->add_segment(Segment(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 0.0f, 1.0f)));
-
-    axis_x->set_scale(QVector3D(0.5, 0.5, 0.5));
-    axis_y->set_scale(QVector3D(0.5, 0.5, 0.5));
-    axis_z->set_scale(QVector3D(0.5, 0.5, 0.5));
-    scene->add_object(axis_x);
-    scene->add_object(axis_y);
-    scene->add_object(axis_z);
-
-
-    QVector3D pos(10.0f, 6.0f, 3.0f);
+    QVector3D pos(2.0f, 1.8f, 0.5f);
     QVector3D center(0.0f, 0.0f, 0.0f);
-    QVector3D sight_dir = (center - pos);
-    QVector3D right = QVector3D::crossProduct(sight_dir, QVector3D(0.0f, 1.0f, 0.0f));
-    QVector3D up = QVector3D::crossProduct(sight_dir, right);
     camera->set_scene(scene);
-    camera->set_viewport(QSize(640, 480));
     camera->set_position(pos);
     camera->set_point_to_look(center);
-    camera->set_up(up);
-    camera->set_clip_planes(0.1f, 150.0f);
 }

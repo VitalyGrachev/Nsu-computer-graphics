@@ -32,6 +32,8 @@ PlainSegmentObject::PlainSegmentObject(QRgb color) {
 
 void PlainSegmentObject::add_segment(const Segment & segment) {
     segments_container.push_back(segment);
+    recalculate_bounds(segment.point1);
+    recalculate_bounds(segment.point2);
 }
 
 BaseObject::SegmentProvider * PlainSegmentObject::get_segment_provider() const {

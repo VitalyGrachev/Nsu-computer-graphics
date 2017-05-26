@@ -67,6 +67,10 @@ SolidOfRevolution::SolidOfRevolution(int number_of_sectors)
 
 void SolidOfRevolution::add_point(const QPointF & point) {
     curve.push_back(point);
+    recalculate_bounds(QVector4D(point.x(), point.y(), 0.0, 1.0));
+    recalculate_bounds(QVector4D(-point.x(), point.y(), 0.0, 1.0));
+    recalculate_bounds(QVector4D(0.0, point.y(), point.x(), 1.0));
+    recalculate_bounds(QVector4D(0.0, point.y(), -point.x(), 1.0));
 }
 
 BaseObject::SegmentProvider * SolidOfRevolution::get_segment_provider() const {

@@ -62,21 +62,27 @@ public:
 
     int height() const { return image.height(); }
 
+    QSize size() const { return image.size(); }
+
     bool texture_lookup(float u, float v, QRgb * output_color) const;
 
     QImage & to_QImage() { return image; }
 
     const QImage & to_QImage() const { return image; }
 
+    void set_pixel(int x, int y, const QRgb & color);
+
     void fill(const QRgb & color);
 
     void fill(const QRect & rect, const QRgb & color);
 
     void draw_line(int x1, int y1, int x2, int y2,
-                   const QRgb & color, LineType type = LineType::DOTTED);
+                   const QRgb & color, LineType type = LineType::SOLID);
 
     void draw_line(const QPoint & pt1, const QPoint & pt2,
-                   const QRgb & color, LineType type = LineType::DOTTED);
+                   const QRgb & color, LineType type = LineType::SOLID);
+
+    void draw_circle(const QPoint & center, int radius, const QRgb & color);
 
     ImageWrapper copy(const QRect & rect = QRect()) const;
 

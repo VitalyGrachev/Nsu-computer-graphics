@@ -14,7 +14,7 @@ public:
 
     void add_segment(const Segment & segment);
 
-private:
+protected:
     std::vector<Segment> segments_container;
 };
 
