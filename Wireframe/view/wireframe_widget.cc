@@ -4,12 +4,6 @@
 #include <QResizeEvent>
 #include <QPainter>
 
-namespace {
-double clamp(double value, double min, double max) {
-    return std::min(std::max(value, min), max);
-}
-}
-
 WireframeWidget::WireframeWidget(QWidget * parent)
         : QWidget(parent) {
 }
@@ -78,15 +72,7 @@ void WireframeWidget::mouseReleaseEvent(QMouseEvent * event) {
 
 void WireframeWidget::wheelEvent(QWheelEvent * event) {
     if (event->phase() == Qt::ScrollUpdate) {
-        const double magic = 0.0001;
-        const int delta = event->angleDelta().y();
-        double z_near = camera->get_near_clip_plane();
-        double z_far = camera->get_far_clip_lane();
-        const double planes_delta = z_far - z_near;
-        z_near = clamp(z_near - magic * delta, 0.01, 100.0);
-        z_far = z_near + planes_delta;
-        camera->set_clip_planes(z_near, z_far);
-        update_view();
+        emit zoom(event->angleDelta().y() < 0.0);
     }
     event->accept();
 }

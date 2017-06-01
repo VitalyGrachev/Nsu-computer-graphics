@@ -22,6 +22,8 @@ public:
 
     double get_far_clip_lane() const { return z_far; }
 
+    QRgb get_background_color() const { return background_color; }
+
     void set_scene(Scene * scene);
 
     void set_viewport(const QSizeF & viewport);
@@ -51,9 +53,7 @@ private:
 
     QVector3D rotation_axis(const QVector2D & delta) const;
 
-    QPointF rescale_to_screen(const QPointF & point, const QSize & screen_size) const;
-
-    bool clip_segment_by_z(Segment & segment) const;
+    QPoint rescale_to_screen(const QPointF & point, const QSize & screen_size) const;
 
     bool clip(Segment & segment) const;
 

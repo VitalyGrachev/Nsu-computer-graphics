@@ -26,6 +26,8 @@ private slots:
 
     void set_spline_mode();
 
+    void show_about();
+
 private:
     void create_central_widget();
 

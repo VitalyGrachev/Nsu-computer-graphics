@@ -18,6 +18,8 @@ signals:
 
     void view_changed();
 
+    void zoom(bool zoom_in);
+
     void camera_changed(Camera * camera);
 
     void active_object_changed(BaseObject * object);

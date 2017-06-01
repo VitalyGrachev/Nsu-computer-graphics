@@ -10,6 +10,8 @@ public:
 
     SegmentProvider * get_segment_provider() const override;
 
+    int get_sector_count() const { return sector_count; }
+
 private:
     Curve * curve;
     int sector_count;

@@ -3,6 +3,12 @@
 #include <QLabel>
 #include <QGridLayout>
 
+namespace {
+double clamp(double value, double min, double max) {
+    return std::min(std::max(value, min), max);
+}
+}
+
 CameraPropertiesBox::CameraPropertiesBox(QWidget * parent)
         : QGroupBox(QObject::tr("Camera properties"), parent) {
     create_layout();
@@ -73,15 +79,13 @@ void CameraPropertiesBox::set_camera(Camera * camera) {
         viewport_height->setEnabled(false);
     }
     ignore_changes = false;
+    change_clip_planes();
 }
 
 void CameraPropertiesBox::change_clip_planes() {
     if (!ignore_changes) {
-        if (near_clip_plane == sender()) {
-            far_clip_plane->setMinimum(near_clip_plane->value() - 0.01);
-        } else {
-            near_clip_plane->setMaximum(far_clip_plane->value() + 0.01);
-        }
+        far_clip_plane->setMinimum(near_clip_plane->value() - 0.01);
+        near_clip_plane->setMaximum(far_clip_plane->value() + 0.01);
 
         if (camera) {
             camera->set_clip_planes(near_clip_plane->value(), far_clip_plane->value());
@@ -95,6 +99,20 @@ void CameraPropertiesBox::change_viewport() {
         if (camera) {
             camera->set_viewport(QSizeF(viewport_width->value(), viewport_height->value()));
             emit view_changed();
+        }
+    }
+}
+
+void CameraPropertiesBox::change_zoom(bool zoom_in) {
+    if(zoom_in) {
+        if(far_clip_plane->value() < far_clip_plane->maximum()) {
+            far_clip_plane->stepUp();
+            near_clip_plane->stepUp();
+        }
+    } else {
+        if(near_clip_plane->value() > near_clip_plane->minimum()) {
+            near_clip_plane->stepDown();
+            far_clip_plane->stepDown();
         }
     }
 }

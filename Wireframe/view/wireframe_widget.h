@@ -7,6 +7,7 @@
 #include "../visualization/camera.h"
 
 class WireframeWidget : public QWidget {
+Q_OBJECT
 public:
     WireframeWidget(QWidget * parent = nullptr);
 
@@ -19,6 +20,10 @@ public slots:
     void set_active_object(BaseObject * object);
 
     void update_view();
+
+signals:
+
+    void zoom(bool zoom_in);
 
 protected:
     void paintEvent(QPaintEvent * event) override;

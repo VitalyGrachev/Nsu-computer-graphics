@@ -6,14 +6,10 @@
 
 namespace {
 
-double aspect_ratio(double width, double height) {
-    return width / height;
-}
-
 bool clip_segment(Segment & segment,
                   double control_value,
                   std::function<double(const QVector4D &)> evaluator,
-                  std::function<bool(const double&, const double&)> predicate) {
+                  std::function<bool(const double &, const double &)> predicate) {
     if (predicate(evaluator(segment.point2), evaluator(segment.point1))) {
         std::swap(segment.point1, segment.point2);
     }
@@ -42,12 +38,12 @@ const QRgb Camera::axis_y_color(qRgb(0, 255, 0));
 const QRgb Camera::axis_z_color(qRgb(0, 0, 255));
 
 Camera::Camera()
-        : position(2.0, 1.5, 0.0),
+        : position(2.5, 1.5, 0.0),
           point_to_look(0.0, 0.0, 0.0),
           right(0.0, 0.0, 1.0),
           viewport(0.16, 0.12),
           background_color(qRgb(180, 180, 180)) {
-    set_clip_planes(0.1, 20.0);
+    set_clip_planes(0.1, 5.0);
     recalculate_orientation_vectors();
     recalculate_view_matrix();
     recalculate_projection_matrix();
@@ -60,7 +56,7 @@ ImageWrapper Camera::take_picture(const QSize & screen) const {
     picture.fill(background_color);
 
     if (scene_to_look_at) {
-        const QMatrix4x4 scene_transform = view_matrix * scene_to_look_at->get_transform();
+        const QMatrix4x4 scene_transform = projection_matrix * view_matrix * scene_to_look_at->get_transform();
 
         for (BaseObject * object : scene_to_look_at->get_objects()) {
             const QRgb color = object->get_color();
@@ -71,17 +67,13 @@ ImageWrapper Camera::take_picture(const QSize & screen) const {
                 const Segment model_segment = segments->next();
                 Segment segment(object_transform * model_segment.point1,
                                 object_transform * model_segment.point2);
-                if (clip_segment_by_z(segment)) {
-                    QVector4D p1 = projection_matrix * segment.point1;
-                    QVector4D p2 = projection_matrix * segment.point2;
+                segment.point1 /= segment.point1.w();
+                segment.point2 /= segment.point2.w();
+                if (clip(segment)) {
+                    const QPoint pt1 = rescale_to_screen(segment.point1.toPointF(), picture.size());
+                    const QPoint pt2 = rescale_to_screen(segment.point2.toPointF(), picture.size());
 
-                    p1 /= p1.w();
-                    p2 /= p2.w();
-
-                    const QPointF pt1 = rescale_to_screen(p1.toPointF(), picture.size());
-                    const QPointF pt2 = rescale_to_screen(p2.toPointF(), picture.size());
-
-                    picture.draw_line(pt1.toPoint(), pt2.toPoint(), color, LineType::SOLID);
+                    picture.draw_line(pt1, pt2, color, LineType::SOLID);
                 }
             }
             const QMatrix4x4 axis_transform = scene_transform *
@@ -94,12 +86,6 @@ ImageWrapper Camera::take_picture(const QSize & screen) const {
     }
 
     return picture;
-}
-
-void Camera::set_viewport(const QSizeF & viewport) {
-    this->viewport = viewport;
-
-    recalculate_projection_matrix();
 }
 
 void Camera::set_scene(Scene * scene) {
@@ -127,6 +113,12 @@ void Camera::set_clip_planes(double near, double far) {
     set_vertical_fov(2.0 * std::atan2(viewport.height() / 2, z_near));
 }
 
+void Camera::set_viewport(const QSizeF & viewport) {
+    this->viewport = viewport;
+
+    recalculate_projection_matrix();
+}
+
 void Camera::set_vertical_fov(double fov) {
     vertical_fov = fov;
 
@@ -148,16 +140,16 @@ void Camera::recalculate_view_matrix() {
 }
 
 void Camera::recalculate_projection_matrix() {
-    const double aspect = aspect_ratio(viewport.width(), viewport.height());
+    const double aspect = viewport.width() / viewport.height();
     projection_matrix = Transform::perspective(vertical_fov, aspect, z_near, z_far);
 }
 
-QPointF Camera::rescale_to_screen(const QPointF & point, const QSize & screen_size) const {
+QPoint Camera::rescale_to_screen(const QPointF & point, const QSize & screen_size) const {
     const double x_scale_factor = static_cast<double>(screen_size.width()) / 2;
     const double y_scale_factor = static_cast<double>(screen_size.height()) / 2;
     const double x = (point.x() + 1.0) * x_scale_factor;
     const double y = (point.y() + 1.0) * y_scale_factor;
-    return QPointF(x, screen_size.height() - 1 - y);
+    return QPoint(static_cast<int>(x), screen_size.height() - 1 - static_cast<int>(y));
 }
 
 QVector3D Camera::rotation_axis(const QVector2D & delta) const {
@@ -185,44 +177,6 @@ void Camera::rotate_object_in_camera_space(const QVector2D & delta, BaseObject *
     scene_to_look_at->recalculate_bounding_box();
 }
 
-bool Camera::clip_segment_by_z(Segment & segment) const {
-    //  Points in front of camera have negative z.
-    const double pt1_near_plane_diff = (-segment.point1.z()) - z_near;
-    const double pt2_near_plane_diff = (-segment.point2.z()) - z_near;
-    const double far_plane_pt1_diff = z_far - (-segment.point1.z());
-    const double far_plane_pt2_diff = z_far - (-segment.point2.z());
-
-    const bool pt1_closer_than_near_plane = std::signbit(pt1_near_plane_diff);
-    const bool pt2_closer_than_near_plane = std::signbit(pt2_near_plane_diff);
-    const bool pt1_farther_than_far_plane = std::signbit(far_plane_pt1_diff);
-    const bool pt2_farther_than_far_plane = std::signbit(far_plane_pt2_diff);
-
-    if (pt1_closer_than_near_plane && pt2_closer_than_near_plane ||
-        pt1_farther_than_far_plane && pt2_farther_than_far_plane) {
-        return false;
-    }
-
-    if (pt1_closer_than_near_plane || pt2_closer_than_near_plane) {
-        const double pt1_coefficient = pt1_near_plane_diff / (pt1_near_plane_diff - pt2_near_plane_diff);
-        const QVector4D near_pt = (1.0 - pt1_coefficient) * segment.point1 + pt1_coefficient * segment.point2;
-        if (pt1_closer_than_near_plane) {
-            segment.point1 = near_pt;
-        } else {
-            segment.point2 = near_pt;
-        }
-    }
-    if (pt1_farther_than_far_plane || pt2_farther_than_far_plane) {
-        const double pt1_coefficient = far_plane_pt1_diff / (far_plane_pt1_diff - far_plane_pt2_diff);
-        const QVector4D far_pt = (1.0 - pt1_coefficient) * segment.point1 + pt1_coefficient * segment.point2;
-        if (pt1_farther_than_far_plane) {
-            segment.point1 = far_pt;
-        } else {
-            segment.point2 = far_pt;
-        }
-    }
-    return true;
-}
-
 bool Camera::clip(Segment & segment) const {
     return clip_segment(segment, -1.0, [](const QVector4D & v) { return v.x(); }, std::less<double>()) &&
            clip_segment(segment, 1.0, [](const QVector4D & v) { return v.x(); }, std::greater<double>()) &&
@@ -236,16 +190,12 @@ void Camera::draw_axis(ImageWrapper & picture,
                        const QMatrix4x4 & transform,
                        const Segment & axis, QRgb color) const {
     Segment segment(transform * axis.point1, transform * axis.point2);
-    if (clip_segment_by_z(segment)) {
-        QVector4D p1 = projection_matrix * segment.point1;
-        QVector4D p2 = projection_matrix * segment.point2;
+    segment.point1 /= segment.point1.w();
+    segment.point2 /= segment.point2.w();
+    if (clip(segment)) {
+        const QPoint pt1 = rescale_to_screen(segment.point1.toPointF(), picture.size());
+        const QPoint pt2 = rescale_to_screen(segment.point2.toPointF(), picture.size());
 
-        p1 /= p1.w();
-        p2 /= p2.w();
-
-        const QPointF pt1 = rescale_to_screen(p1.toPointF(), picture.size());
-        const QPointF pt2 = rescale_to_screen(p2.toPointF(), picture.size());
-
-        picture.draw_line(pt1.toPoint(), pt2.toPoint(), color, LineType::SOLID);
+        picture.draw_line(pt1, pt2, color, LineType::SOLID);
     }
 }

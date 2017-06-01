@@ -14,6 +14,8 @@ public slots:
 
     void set_camera(Camera * camera);
 
+    void change_zoom(bool zoom_in);
+
 signals:
 
     void view_changed();

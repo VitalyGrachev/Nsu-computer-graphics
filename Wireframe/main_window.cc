@@ -31,9 +31,6 @@ void MainWindow::create_central_widget() {
     central_layout->addWidget(spline = new SplineWidget(this));
     central_layout->addWidget(properties = new PropertiesWidget(this));
 
-//    spline->setVisible(false);
-//    wireframe->setVisible(true);
-
     connect(properties, &PropertiesWidget::view_changed,
             wireframe, &WireframeWidget::update_view);
     connect(properties, &PropertiesWidget::camera_changed,
@@ -42,6 +39,8 @@ void MainWindow::create_central_widget() {
             wireframe, &WireframeWidget::set_active_object);
     connect(properties, &PropertiesWidget::active_spline_changed,
             spline, &SplineWidget::set_curve);
+    connect(wireframe, &WireframeWidget::zoom,
+            properties, &PropertiesWidget::zoom);
 }
 
 void MainWindow::create_menu_and_toolbar() {
@@ -57,6 +56,10 @@ void MainWindow::create_menu_and_toolbar() {
     connect(reset_rotation, &QAction::triggered,
             this, &MainWindow::reset_scene_rotation);
 
+    QAction * about_action = new QAction(tr("About"), this);
+    connect(about_action, &QAction::triggered,
+            this, &MainWindow::show_about);
+
     QActionGroup * mode_group = new QActionGroup(this);
     QAction * wireframe_mode = mode_group->addAction(tr("Wireframe"));
     connect(wireframe_mode, &QAction::triggered,
@@ -70,8 +73,8 @@ void MainWindow::create_menu_and_toolbar() {
     spline_mode->setCheckable(true);
 
     QMenu * file_menu = new QMenu(tr("File"), this);
-    file_menu->addAction(save_action);
     file_menu->addAction(open_action);
+    file_menu->addAction(save_action);
 
     QMenu * edit_menu = new QMenu(tr("Edit"), this);
     edit_menu->addAction(reset_rotation);
@@ -79,16 +82,23 @@ void MainWindow::create_menu_and_toolbar() {
     QMenu * mode_menu = new QMenu(tr("Mode"), this);
     mode_menu->addActions(mode_group->actions());
 
+    QMenu * help_menu = new QMenu(tr("Help"), this);
+    help_menu->addAction(about_action);
+
     QToolBar * tool_bar = new QToolBar(this);
-    tool_bar->addAction(save_action);
+    tool_bar->setMovable(false);
     tool_bar->addAction(open_action);
+    tool_bar->addAction(save_action);
     tool_bar->addAction(reset_rotation);
     tool_bar->addSeparator();
     tool_bar->addActions(mode_group->actions());
+    tool_bar->addSeparator();
+    tool_bar->addAction(about_action);
 
     menuBar()->addMenu(file_menu);
     menuBar()->addMenu(edit_menu);
     menuBar()->addMenu(mode_menu);
+    menuBar()->addMenu(help_menu);
     addToolBar(tool_bar);
 }
 
@@ -149,8 +159,24 @@ void MainWindow::set_spline_mode() {
     wireframe->setVisible(false);
 }
 
-void MainWindow::save_scene() {
+void MainWindow::show_about() {
+    QMessageBox::about(this, tr("About FIT_14202_Grachev_Wireframe"),
+                       tr("Wireframe Version 1.0, NSU FIT 14202 Grachev\n\n"
+                                  "* To rotate single object use left mouse button.\n"
+                                  "* To rotate whole scene use right mouse button."));
+}
 
+void MainWindow::save_scene() {
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                    "./",
+                                                    "Scene(*.txt);;All files(*.*)");
+    if (!filename.isEmpty()) {
+        QFile file(filename);
+        if (file.open(QIODevice::WriteOnly)) {
+            QTextStream stream(&file);
+            scene_info->save(stream);
+        }
+    }
 }
 
 void MainWindow::open_file() {
@@ -165,7 +191,7 @@ void MainWindow::open_file() {
                 SceneLoader loader = SceneLoader(stream);
 
                 std::shared_ptr<SceneInfo> info = loader();
-                properties->set_scene_info(scene_info.get());
+                properties->set_scene_info(info.get());
                 scene_info = info;
             }
         } catch (const std::runtime_error & e) {
