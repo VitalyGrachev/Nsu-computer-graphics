@@ -2,18 +2,17 @@
 #define SOLID_OF_REVOLUTION_H
 
 #include "../visualization/base_object.h"
+#include "../curve/curve.h"
 
 class SolidOfRevolution : public BaseObject {
 public:
-    SolidOfRevolution(int number_of_sectors);
+    SolidOfRevolution(Curve * curve, int sector_count);
 
     SegmentProvider * get_segment_provider() const override;
 
-    void add_point(const QPointF & point);
-
 private:
-    std::vector<QPointF> curve;
-    int number_of_sectors;
+    Curve * curve;
+    int sector_count;
 };
 
 #endif //SOLID_OF_REVOLUTION_H

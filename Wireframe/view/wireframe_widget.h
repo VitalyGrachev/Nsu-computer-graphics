@@ -8,11 +8,15 @@
 
 class WireframeWidget : public QWidget {
 public:
-    WireframeWidget(std::shared_ptr<Camera> camera);
+    WireframeWidget(QWidget * parent = nullptr);
 
     ~WireframeWidget() = default;
 
 public slots:
+
+    void set_camera(Camera * camera);
+
+    void set_active_object(BaseObject * object);
 
     void update_view();
 
@@ -32,7 +36,8 @@ protected:
 private:
     ImageWrapper shown_image;
 
-    std::shared_ptr<Camera> camera;
+    BaseObject * active_object = nullptr;
+    Camera * camera = nullptr;
     QPoint last_pos;
     bool rotating_object = false;
     bool rotating_scene = false;

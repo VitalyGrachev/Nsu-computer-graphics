@@ -1,15 +1,34 @@
 #include "camera.h"
 
-#include <QColor>
 #include <QVector2D>
-#include <iostream>
 #include "base_object.h"
-#include "../util/matrix_utils.h"
+#include "../util/transform.h"
 
 namespace {
 
 double aspect_ratio(double width, double height) {
     return width / height;
+}
+
+bool clip_segment(Segment & segment,
+                  double control_value,
+                  std::function<double(const QVector4D &)> evaluator,
+                  std::function<bool(const double&, const double&)> predicate) {
+    if (predicate(evaluator(segment.point2), evaluator(segment.point1))) {
+        std::swap(segment.point1, segment.point2);
+    }
+    const double value1 = evaluator(segment.point1);
+    const double value2 = evaluator(segment.point2);
+    if (predicate(value2, control_value)) {
+        return false;
+    }
+    if (predicate(value1, control_value)) {
+        const double abs_val1 = std::abs(value1 - control_value);
+        const double abs_val2 = std::abs(value2 - control_value);
+        const double k = abs_val1 / (abs_val1 + abs_val2);
+        segment.point1 = (1.0 - k) * segment.point1 + k * segment.point2;
+    }
+    return true;
 }
 
 }
@@ -18,17 +37,18 @@ const QVector3D Camera::world_up(0.0, 1.0, 0.0);
 const Segment Camera::axis_x(QVector3D(0.2, 0.0, 0.0), QVector3D(0.0, 0.0, 0.0));
 const Segment Camera::axis_y(QVector3D(0.0, 0.2, 0.0), QVector3D(0.0, 0.0, 0.0));
 const Segment Camera::axis_z(QVector3D(0.0, 0.0, 0.2), QVector3D(0.0, 0.0, 0.0));
-const QRgb Camera::axis_x_color(QColor(255, 0, 0).rgb());
-const QRgb Camera::axis_y_color(QColor(0, 255, 0).rgb());
-const QRgb Camera::axis_z_color(QColor(0, 0, 255).rgb());
+const QRgb Camera::axis_x_color(qRgb(255, 0, 0));
+const QRgb Camera::axis_y_color(qRgb(0, 255, 0));
+const QRgb Camera::axis_z_color(qRgb(0, 0, 255));
 
 Camera::Camera()
-        : position(-1.0, 1.0, 0.0),
+        : position(2.0, 1.5, 0.0),
           point_to_look(0.0, 0.0, 0.0),
           right(0.0, 0.0, 1.0),
           viewport(0.16, 0.12),
-          background_color(QColor(180, 180, 180).rgb()) {
+          background_color(qRgb(180, 180, 180)) {
     set_clip_planes(0.1, 20.0);
+    recalculate_orientation_vectors();
     recalculate_view_matrix();
     recalculate_projection_matrix();
 }
@@ -39,36 +59,38 @@ ImageWrapper Camera::take_picture(const QSize & screen) const {
     ImageWrapper picture(viewport.scaled(screen, Qt::KeepAspectRatio).toSize());
     picture.fill(background_color);
 
-    const QMatrix4x4 scene_transform = view_matrix * scene_to_look_at->get_transform();
+    if (scene_to_look_at) {
+        const QMatrix4x4 scene_transform = view_matrix * scene_to_look_at->get_transform();
 
-    for (BaseObject * object : scene_to_look_at->get_objects()) {
-        const QRgb color = object->get_color();
-        const QMatrix4x4 object_transform = scene_transform * object->get_transform();
+        for (BaseObject * object : scene_to_look_at->get_objects()) {
+            const QRgb color = object->get_color();
+            const QMatrix4x4 object_transform = scene_transform * object->get_transform();
 
-        std::unique_ptr<BaseObject::SegmentProvider> segments(object->get_segment_provider());
-        while (segments->has_next()) {
-            const Segment model_segment = segments->next();
-            Segment segment(object_transform * model_segment.point1,
-                            object_transform * model_segment.point2);
-            if (clip_segment_by_z(segment)) {
-                QVector4D p1 = projection_matrix * segment.point1;
-                QVector4D p2 = projection_matrix * segment.point2;
+            std::unique_ptr<BaseObject::SegmentProvider> segments(object->get_segment_provider());
+            while (segments->has_next()) {
+                const Segment model_segment = segments->next();
+                Segment segment(object_transform * model_segment.point1,
+                                object_transform * model_segment.point2);
+                if (clip_segment_by_z(segment)) {
+                    QVector4D p1 = projection_matrix * segment.point1;
+                    QVector4D p2 = projection_matrix * segment.point2;
 
-                p1 /= p1.w();
-                p2 /= p2.w();
+                    p1 /= p1.w();
+                    p2 /= p2.w();
 
-                const QPointF pt1 = rescale_to_screen(p1.toPointF(), picture.size());
-                const QPointF pt2 = rescale_to_screen(p2.toPointF(), picture.size());
+                    const QPointF pt1 = rescale_to_screen(p1.toPointF(), picture.size());
+                    const QPointF pt2 = rescale_to_screen(p2.toPointF(), picture.size());
 
-                picture.draw_line(pt1.toPoint(), pt2.toPoint(), color, LineType::SOLID);
+                    picture.draw_line(pt1.toPoint(), pt2.toPoint(), color, LineType::SOLID);
+                }
             }
+            const QMatrix4x4 axis_transform = scene_transform *
+                                              translation(object->get_position()) *
+                                              object->get_rotation();
+            draw_axis(picture, axis_transform, axis_x, axis_x_color);
+            draw_axis(picture, axis_transform, axis_y, axis_y_color);
+            draw_axis(picture, axis_transform, axis_z, axis_z_color);
         }
-        const QMatrix4x4 axis_transform = scene_transform *
-                                          translation(object->get_position()) *
-                                          object->get_rotation();
-        draw_axis(picture, axis_transform, axis_x, axis_x_color);
-        draw_axis(picture, axis_transform, axis_y, axis_y_color);
-        draw_axis(picture, axis_transform, axis_z, axis_z_color);
     }
 
     return picture;
@@ -80,7 +102,7 @@ void Camera::set_viewport(const QSizeF & viewport) {
     recalculate_projection_matrix();
 }
 
-void Camera::set_scene(std::shared_ptr<Scene> scene) {
+void Camera::set_scene(Scene * scene) {
     scene_to_look_at = scene;
 }
 
@@ -111,14 +133,18 @@ void Camera::set_vertical_fov(double fov) {
     recalculate_projection_matrix();
 }
 
+void Camera::set_background_color(QRgb color) {
+    background_color = color;
+}
+
 void Camera::recalculate_orientation_vectors() {
     const QVector3D dir = point_to_look - position;
     right = QVector3D::crossProduct(dir, world_up).normalized();
-    screen_up = QVector3D::crossProduct(dir, right).normalized();
+    screen_up = QVector3D::crossProduct(right, dir).normalized();
 }
 
 void Camera::recalculate_view_matrix() {
-    view_matrix = Transform::look_at(position, point_to_look, screen_up);
+    view_matrix = Transform::look_at(position, point_to_look, world_up);
 }
 
 void Camera::recalculate_projection_matrix() {
@@ -131,28 +157,32 @@ QPointF Camera::rescale_to_screen(const QPointF & point, const QSize & screen_si
     const double y_scale_factor = static_cast<double>(screen_size.height()) / 2;
     const double x = (point.x() + 1.0) * x_scale_factor;
     const double y = (point.y() + 1.0) * y_scale_factor;
-    return QPointF(x, y);
+    return QPointF(x, screen_size.height() - 1 - y);
 }
 
-QMatrix4x4 Camera::rotation_in_camera_space(const QVector2D & delta) const {
-    const float magic = 0.3f;
-    const float angle = magic * delta.length();
-    QVector3D axis = delta.y() * right + delta.x() * screen_up;
-    QMatrix4x4 rotation;
-    Transform::rotate(rotation, angle, axis);
-    return rotation;
+QVector3D Camera::rotation_axis(const QVector2D & delta) const {
+    return delta.y() * right + delta.x() * screen_up;
 }
 
 void Camera::rotate_scene_in_camera_space(const QVector2D & delta) {
+    const float magic = 0.3f;
+    const float angle = magic * delta.length();
+    const QVector3D axis = rotation_axis(delta);
+
     const QMatrix4x4 & last_rotation = scene_to_look_at->get_rotation();
-    const QMatrix4x4 additional_rotation = rotation_in_camera_space(delta);
-    scene_to_look_at->set_rotation(additional_rotation * last_rotation);
+    if (scene_to_look_at) {
+        scene_to_look_at->set_rotation(Transform::rotation(angle, axis) * last_rotation);
+    }
 }
 
 void Camera::rotate_object_in_camera_space(const QVector2D & delta, BaseObject * object) {
+    const float magic = 0.3f;
+    const float angle = magic * delta.length();
+    const QVector3D axis = scene_to_look_at->get_rotation().inverted() * rotation_axis(delta);
+
     const QMatrix4x4 & last_rotation = object->get_rotation();
-    const QMatrix4x4 additional_rotation = rotation_in_camera_space(delta);
-    object->set_rotation(additional_rotation * last_rotation);
+    object->set_rotation(Transform::rotation(angle, axis) * last_rotation);
+    scene_to_look_at->recalculate_bounding_box();
 }
 
 bool Camera::clip_segment_by_z(Segment & segment) const {
@@ -191,6 +221,15 @@ bool Camera::clip_segment_by_z(Segment & segment) const {
         }
     }
     return true;
+}
+
+bool Camera::clip(Segment & segment) const {
+    return clip_segment(segment, -1.0, [](const QVector4D & v) { return v.x(); }, std::less<double>()) &&
+           clip_segment(segment, 1.0, [](const QVector4D & v) { return v.x(); }, std::greater<double>()) &&
+           clip_segment(segment, -1.0, [](const QVector4D & v) { return v.y(); }, std::less<double>()) &&
+           clip_segment(segment, 1.0, [](const QVector4D & v) { return v.y(); }, std::greater<double>()) &&
+           clip_segment(segment, 0.0, [](const QVector4D & v) { return v.z(); }, std::less<double>()) &&
+           clip_segment(segment, 1.0, [](const QVector4D & v) { return v.z(); }, std::greater<double>());
 }
 
 void Camera::draw_axis(ImageWrapper & picture,

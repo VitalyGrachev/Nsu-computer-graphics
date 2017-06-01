@@ -11,7 +11,8 @@ public:
     ScaleHelper(const Curve::PointContainer & points, const QSize & image_size);
 
     QPoint operator()(const QPointF & point) const {
-        return image_center + (point * scale_factor).toPoint();
+        QPoint pt = (point * scale_factor).toPoint();
+        return image_center + QPoint(pt.x(), -pt.y());
     }
 
 private:
@@ -48,8 +49,8 @@ SplineWidget::SplineWidget(QWidget * parent)
     redraw_image();
 }
 
-void SplineWidget::set_curve(std::shared_ptr<BSpline> & new_curve) {
-    curve = new_curve;
+void SplineWidget::set_curve(BSpline * curve) {
+    this->curve = curve;
     redraw_image();
 }
 
@@ -72,7 +73,7 @@ void SplineWidget::redraw_image() {
     shown_image.draw_line(shown_image.width() / 2, 0,
                           shown_image.width() / 2, shown_image.height(), axis_color);
     if (curve) {
-        const Curve::PointContainer & curve_points = curve->get_discrete_curve_points();
+        const Curve::PointContainer & curve_points = curve->get_points();
         ScaleHelper scale_helper(curve_points, shown_image.size());
 
         QPoint pt = scale_helper(QPointF(1, 0));

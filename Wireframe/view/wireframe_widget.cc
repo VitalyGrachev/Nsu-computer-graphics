@@ -10,15 +10,32 @@ double clamp(double value, double min, double max) {
 }
 }
 
-WireframeWidget::WireframeWidget(std::shared_ptr<Camera> camera)
-        : camera(camera) {
+WireframeWidget::WireframeWidget(QWidget * parent)
+        : QWidget(parent) {
+}
+
+void WireframeWidget::update_view() {
+    if(camera) {
+        shown_image = camera->take_picture(size());
+        update();
+    }
+}
+
+void WireframeWidget::set_camera(Camera * camera) {
+    this->camera = camera;
     update_view();
+}
+
+void WireframeWidget::set_active_object(BaseObject * object) {
+    active_object = object;
 }
 
 void WireframeWidget::paintEvent(QPaintEvent * event) {
     QPainter painter(this);
     const QImage & image = shown_image.to_QImage();
-    painter.drawImage(0, 0, image);
+    const QSize size_diff = size() - image.size();
+    const QPoint point(size_diff.width() / 2, size_diff.height() / 2);
+    painter.drawImage(point, image);
     event->accept();
 }
 
@@ -27,16 +44,13 @@ void WireframeWidget::resizeEvent(QResizeEvent * event) {
     event->accept();
 }
 
-void WireframeWidget::update_view() {
-    shown_image = camera->take_picture(size());
-    update();
-}
-
 void WireframeWidget::mousePressEvent(QMouseEvent * event) {
-    if (event->button() == Qt::RightButton) {
-        rotating_scene = true;
-    } else if (event->button() == Qt::LeftButton) {
-        rotating_object = true;
+    if(!rotating_scene && !rotating_object) {
+        if (event->button() == Qt::RightButton) {
+            rotating_scene = true;
+        } else if (event->button() == Qt::LeftButton) {
+            rotating_object = true;
+        }
     }
     last_pos = event->pos();
     event->accept();
@@ -48,8 +62,9 @@ void WireframeWidget::mouseMoveEvent(QMouseEvent * event) {
     if (rotating_scene) {
         camera->rotate_scene_in_camera_space(delta);
         update_view();
-    } else if (rotating_object) {
-
+    } else if (rotating_object && active_object) {
+        camera->rotate_object_in_camera_space(delta, active_object);
+        update_view();
     }
     last_pos = act_pos;
     event->accept();
@@ -65,7 +80,7 @@ void WireframeWidget::wheelEvent(QWheelEvent * event) {
     if (event->phase() == Qt::ScrollUpdate) {
         const double magic = 0.0001;
         const int delta = event->angleDelta().y();
-        double z_near = camera->get_near_clip_lane();
+        double z_near = camera->get_near_clip_plane();
         double z_far = camera->get_far_clip_lane();
         const double planes_delta = z_far - z_near;
         z_near = clamp(z_near - magic * delta, 0.01, 100.0);

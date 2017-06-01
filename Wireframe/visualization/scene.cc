@@ -1,25 +1,19 @@
 #include "scene.h"
-#include "../util/matrix_utils.h"
+#include "../util/transform.h"
 
 #include <algorithm>
 #include <QColor>
 
 Scene::Scene()
-        : box_object(new Parallelepiped(1.0, 1.0, 1.0)),
+        : box_object(new Parallelepiped(1.0, 1.0, 1.0, QColor(46, 106, 124).rgb())),
           doesnt_affect_bounds(1),
           center_position(0.0, 0.0, 0.0),
           scale(1.0, 1.0, 1.0) {
-    doesnt_affect_bounds.insert(static_cast<BaseObject*>(box_object));
+    doesnt_affect_bounds.insert(static_cast<BaseObject *>(box_object));
 
     add_object(box_object);
 
     recalculate_transform();
-}
-
-Scene::~Scene() {
-    for (BaseObject * object : objects) {
-        delete object;
-    }
 }
 
 void Scene::add_object(BaseObject * object) {
@@ -31,7 +25,6 @@ void Scene::remove_object(BaseObject * object) {
     auto found = std::find(std::begin(objects), std::end(objects), object);
     if (found != std::end(objects)) {
         objects.erase(found);
-        delete object;
         recalculate_bounding_box();
     }
 }
@@ -64,8 +57,7 @@ void Scene::recalculate_bounding_box(BaseObject * object) {
         box_object->set_dimensions(bounds.get_width(), bounds.get_height(), bounds.get_length());
         box_object->set_position(bounds.get_center());
 
-        const double max_dimension = std::max(bounds.get_width(),
-                                              std::max(bounds.get_height(), bounds.get_length()));
+        const double max_dimension = std::max({bounds.get_width(), bounds.get_height(), bounds.get_length()});
         const double scale = 2.0 / max_dimension;
         set_position(-bounds.get_center());
         set_scale(scale);
@@ -73,7 +65,7 @@ void Scene::recalculate_bounding_box(BaseObject * object) {
 }
 
 void Scene::recalculate_bounding_box() {
-    bounds = BoundingBox();
+    bounds.clear();
     for (BaseObject * object : objects) {
         recalculate_bounding_box(object);
     }

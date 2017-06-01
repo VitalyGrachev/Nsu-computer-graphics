@@ -21,10 +21,7 @@ private:
 
     QPointF calculate_point(double t) const;
 
-
     PointContainer control_points;
-
-    static const int spline_order = 3;
 };
 
 #endif //BSPLINE_H

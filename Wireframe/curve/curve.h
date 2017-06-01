@@ -10,11 +10,13 @@ public:
 
     Curve(int major_segments_count, int minor_segments_count);
 
+    virtual ~Curve() {}
+
     int major_segments_count() const { return major_segments; }
 
     int minor_segments_count() const { return minor_segments; }
 
-    const PointContainer & get_discrete_curve_points() const { return discrete_curve; }
+    const PointContainer & get_points() const { return discrete_curve; }
 
 protected:
     PointContainer discrete_curve;

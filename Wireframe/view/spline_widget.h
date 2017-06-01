@@ -7,10 +7,12 @@
 #include "../curve/bspline.h"
 
 class SplineWidget : public QWidget {
+Q_OBJECT
 public:
     SplineWidget(QWidget * parent = nullptr);
 
-    void set_curve(std::shared_ptr<BSpline> & curve);
+public slots:
+    void set_curve(BSpline * curve);
 
 protected:
     void paintEvent(QPaintEvent * event) override;
@@ -21,7 +23,7 @@ private:
     void redraw_image();
 
     ImageWrapper shown_image;
-    std::shared_ptr<BSpline> curve;
+    BSpline * curve;
 
     static const QRgb bg_color;
     static const QRgb curve_color;

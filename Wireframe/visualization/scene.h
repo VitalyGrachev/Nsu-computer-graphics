@@ -14,7 +14,11 @@ public:
 
     Scene();
 
-    ~Scene();
+    Scene(const Scene &) = delete;
+
+    ~Scene() {}
+
+    Scene & operator=(const Scene &) = delete;
 
     const QMatrix4x4 & get_transform() const { return transform_matrix; }
 
@@ -32,14 +36,15 @@ public:
 
     void set_rotation(const QMatrix4x4 & rotation);
 
+    void recalculate_bounding_box();
+
 private:
+
     void set_position(const QVector3D & center_position);
 
     void set_scale(float scale_factor);
 
     void recalculate_bounding_box(BaseObject * object);
-
-    void recalculate_bounding_box();
 
     void recalculate_transform();
 
