@@ -7,14 +7,23 @@
 #include "../visualization/camera.h"
 
 class WireframeWidget : public QWidget {
+Q_OBJECT
 public:
-    WireframeWidget(std::shared_ptr<Camera> camera);
+    WireframeWidget(QWidget * parent = nullptr);
 
     ~WireframeWidget() = default;
 
 public slots:
 
+    void set_camera(Camera * camera);
+
+    void set_active_object(BaseObject * object);
+
     void update_view();
+
+signals:
+
+    void zoom(bool zoom_in);
 
 protected:
     void paintEvent(QPaintEvent * event) override;
@@ -27,10 +36,16 @@ protected:
 
     void mouseMoveEvent(QMouseEvent * event) override;
 
+    void wheelEvent(QWheelEvent * event) override;
+
 private:
     ImageWrapper shown_image;
 
-    std::shared_ptr<Camera> camera;
+    BaseObject * active_object = nullptr;
+    Camera * camera = nullptr;
+    QPoint last_pos;
+    bool rotating_object = false;
+    bool rotating_scene = false;
 };
 
 #endif //WIREFRAME_WIDGET_H

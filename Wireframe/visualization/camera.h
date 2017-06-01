@@ -2,7 +2,7 @@
 #define CAMERA_H
 
 #include <memory>
-#include <QRect>
+#include <QSizeF>
 #include <QVector3D>
 #include <QMatrix4x4>
 #include "../util/image_wrapper.h"
@@ -14,38 +14,69 @@ public:
 
     ~Camera() = default;
 
-    ImageWrapper take_picture() const;
+    ImageWrapper take_picture(const QSize & screen) const;
 
-    const QSize & get_viewport() const { return viewport; }
+    const QSizeF & get_viewport() const { return viewport; }
 
-    void set_scene(std::shared_ptr<Scene> scene);
+    double get_near_clip_plane() const { return z_near; }
 
-    void set_viewport(const QSize & viewport);
+    double get_far_clip_lane() const { return z_far; }
+
+    QRgb get_background_color() const { return background_color; }
+
+    void set_scene(Scene * scene);
+
+    void set_viewport(const QSizeF & viewport);
 
     void set_position(const QVector3D & position);
 
     void set_point_to_look(const QVector3D & point_to_look);
 
-    void set_up(const QVector3D & up);
+    void set_clip_planes(double near, double far);
+
+    void set_background_color(QRgb background_color);
+
+    void rotate_scene_in_camera_space(const QVector2D & delta);
+
+    void rotate_object_in_camera_space(const QVector2D & delta, BaseObject * object);
+
+private:
+    void recalculate_view_matrix();
+
+    void recalculate_projection_matrix();
+
+    void recalculate_orientation_vectors();
 
     void set_vertical_fov(double fov);
 
-    void set_clip_planes(double near, double far);
-private:
-    void recalculate_matrix();
+    void draw_axis(ImageWrapper & picture, const QMatrix4x4 & transform, const Segment & axis, QRgb color) const;
 
-    QPointF rescale_to_screen(const QPointF & point) const;
+    QVector3D rotation_axis(const QVector2D & delta) const;
 
-    std::shared_ptr<Scene> scene_to_look_at;
-    QMatrix4x4 camera_transform;
+    QPoint rescale_to_screen(const QPointF & point, const QSize & screen_size) const;
+
+    bool clip(Segment & segment) const;
+
+    QMatrix4x4 projection_matrix;
+    QMatrix4x4 view_matrix;
     QVector3D position;
     QVector3D point_to_look;
-    QVector3D up;
-    QSize viewport;
+    QVector3D right;
+    QVector3D screen_up;
+    QSizeF viewport;
+    Scene * scene_to_look_at = nullptr;
     double vertical_fov;
     double z_near;
     double z_far;
     QRgb background_color;
+
+    static const QVector3D world_up;
+    static const Segment axis_x;
+    static const Segment axis_y;
+    static const Segment axis_z;
+    static const QRgb axis_x_color;
+    static const QRgb axis_y_color;
+    static const QRgb axis_z_color;
 };
 
 

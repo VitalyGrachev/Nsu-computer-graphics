@@ -1,16 +1,24 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <forward_list>
+#include <deque>
+#include <unordered_set>
 #include "base_object.h"
+#include "../util/bounding_box.h"
+#include "../figure/plain_segment_object.h"
+#include "../figure/parallelepiped.h"
 
 class Scene {
 public:
-    using ObjectsContainer = std::forward_list<BaseObject *>;
+    using ObjectsContainer = std::deque<BaseObject *>;
 
     Scene();
 
-    ~Scene();
+    Scene(const Scene &) = delete;
+
+    ~Scene() {}
+
+    Scene & operator=(const Scene &) = delete;
 
     const QMatrix4x4 & get_transform() const { return transform_matrix; }
 
@@ -18,7 +26,7 @@ public:
 
     const QVector3D & get_position() const { return center_position; }
 
-    float get_scale() const { return scale_factor; }
+    float get_scale() const { return scale.x(); }
 
     ObjectsContainer & get_objects() { return objects; }
 
@@ -28,20 +36,26 @@ public:
 
     void set_rotation(const QMatrix4x4 & rotation);
 
+    void recalculate_bounding_box();
+
+private:
+
     void set_position(const QVector3D & center_position);
 
     void set_scale(float scale_factor);
 
-private:
-    void recalculate_bounding_box();
+    void recalculate_bounding_box(BaseObject * object);
 
     void recalculate_transform();
 
+    Parallelepiped * box_object;
+    std::unordered_set<BaseObject *> doesnt_affect_bounds;
     ObjectsContainer objects;
+    BoundingBox bounds;
     QMatrix4x4 transform_matrix;
     QMatrix4x4 rotation;
     QVector3D center_position;
-    float scale_factor;
+    QVector3D scale;
 };
 
 #endif //SCENE_H

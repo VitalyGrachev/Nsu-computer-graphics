@@ -1,14 +1,20 @@
-#include <iostream>
 #include "main_window.h"
 
-#include "figure/plain_segment_object.h"
+#include <QAction>
+#include <QFileDialog>
+#include <QMenu>
+#include <QMenuBar>
+#include <QToolBar>
+#include <QMessageBox>
+#include <iostream>
+#include <QtWidgets/QHBoxLayout>
 #include "figure/solid_of_revolution.h"
+#include "util/scene_loader.h"
 
 MainWindow::MainWindow() {
-    create_scene();
-
-    wireframe = new WireframeWidget(camera);
-    setCentralWidget(wireframe);
+    create_central_widget();
+    create_menu_and_toolbar();
+    create_default_scene();
 
     QSize min_size(800, 600);
     setMinimumSize(min_size);
@@ -16,71 +22,178 @@ MainWindow::MainWindow() {
     resize(min_size);
 }
 
-void MainWindow::create_scene() {
-    camera = std::shared_ptr<Camera>(new Camera());
+void MainWindow::create_central_widget() {
+    QWidget * central_widget = new QWidget(this);
+    QHBoxLayout * central_layout = new QHBoxLayout(central_widget);
+    setCentralWidget(central_widget);
 
-    std::shared_ptr<Scene> scene(new Scene());
+    central_layout->addWidget(wireframe = new WireframeWidget(this));
+    central_layout->addWidget(spline = new SplineWidget(this));
+    central_layout->addWidget(properties = new PropertiesWidget(this));
 
-    SolidOfRevolution * vase = new SolidOfRevolution(30);
-    vase->add_point(QPointF(2.0, 3.0));
-    vase->add_point(QPointF(1.0, 2.0));
-    vase->add_point(QPointF(1.0, 1.0));
-    vase->add_point(QPointF(2.0, 0.0));
-    vase->add_point(QPointF(2.5, -1.5));
-    vase->add_point(QPointF(2.0, -3.0));
-    vase->add_point(QPointF(1.0, -3.5));
+    connect(properties, &PropertiesWidget::view_changed,
+            wireframe, &WireframeWidget::update_view);
+    connect(properties, &PropertiesWidget::camera_changed,
+            wireframe, &WireframeWidget::set_camera);
+    connect(properties, &PropertiesWidget::active_object_changed,
+            wireframe, &WireframeWidget::set_active_object);
+    connect(properties, &PropertiesWidget::active_spline_changed,
+            spline, &SplineWidget::set_curve);
+    connect(wireframe, &WireframeWidget::zoom,
+            properties, &PropertiesWidget::zoom);
+}
 
-    vase->set_color(QColor(0, 0, 0).rgb());
-    vase->set_scale(QVector3D(0.05, 0.05, 0.05));
-    vase->set_position(QVector3D(0.1, 0.0, -0.3));
-    scene->add_object(vase);
+void MainWindow::create_menu_and_toolbar() {
+    QAction * open_action = new QAction(tr("Open"), this);
+    connect(open_action, &QAction::triggered,
+            this, &MainWindow::open_file);
 
-    SolidOfRevolution * cube = new SolidOfRevolution(4);
-    cube->add_point(QPointF(0.7, 0.5));
-    cube->add_point(QPointF(0.7, -0.5));
+    QAction * save_action = new QAction(tr("Save"), this);
+    connect(save_action, &QAction::triggered,
+            this, &MainWindow::save_scene);
 
-    cube->set_color(QColor(0, 0, 200).rgb());
-    cube->set_scale(QVector3D(0.3, 0.3, 0.3));
-    scene->add_object(cube);
+    QAction * reset_rotation = new QAction(tr("Reset rotation"), this);
+    connect(reset_rotation, &QAction::triggered,
+            this, &MainWindow::reset_scene_rotation);
 
-    SolidOfRevolution * pyramid = new SolidOfRevolution(3);
-    pyramid->add_point(QPointF(0.0, 0.5));
-    pyramid->add_point(QPointF(0.7, -0.5));
+    QAction * about_action = new QAction(tr("About"), this);
+    connect(about_action, &QAction::triggered,
+            this, &MainWindow::show_about);
 
-    QMatrix4x4 rot;
-    rot.rotate(-45, 0, 0, 1);
-    pyramid->set_rotation(rot);
-    pyramid->set_color(QColor(0, 0, 0).rgb());
-    pyramid->set_position(QVector3D(0.0, 0.0, 0.3));
-    pyramid->set_scale(QVector3D(0.3, 0.3, 0.3));
-    scene->add_object(pyramid);
+    QActionGroup * mode_group = new QActionGroup(this);
+    QAction * wireframe_mode = mode_group->addAction(tr("Wireframe"));
+    connect(wireframe_mode, &QAction::triggered,
+            this, &MainWindow::set_wireframe_mode);
+    wireframe_mode->setCheckable(true);
+    wireframe_mode->trigger();
 
-    PlainSegmentObject * axis_x = new PlainSegmentObject(QColor(250, 0, 0).rgb());
-    axis_x->add_segment(Segment(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(1.0f, 0.0f, 0.0f)));
+    QAction * spline_mode = mode_group->addAction(tr("Spline"));
+    connect(spline_mode, &QAction::triggered,
+            this, &MainWindow::set_spline_mode);
+    spline_mode->setCheckable(true);
 
-    PlainSegmentObject * axis_y = new PlainSegmentObject(QColor(0, 250, 0).rgb());
-    axis_y->add_segment(Segment(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f)));
+    QMenu * file_menu = new QMenu(tr("File"), this);
+    file_menu->addAction(open_action);
+    file_menu->addAction(save_action);
 
-    PlainSegmentObject * axis_z = new PlainSegmentObject(QColor(0, 0, 250).rgb());
-    axis_z->add_segment(Segment(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 0.0f, 1.0f)));
+    QMenu * edit_menu = new QMenu(tr("Edit"), this);
+    edit_menu->addAction(reset_rotation);
 
-    axis_x->set_scale(QVector3D(0.5, 0.5, 0.5));
-    axis_y->set_scale(QVector3D(0.5, 0.5, 0.5));
-    axis_z->set_scale(QVector3D(0.5, 0.5, 0.5));
-    scene->add_object(axis_x);
-    scene->add_object(axis_y);
-    scene->add_object(axis_z);
+    QMenu * mode_menu = new QMenu(tr("Mode"), this);
+    mode_menu->addActions(mode_group->actions());
 
+    QMenu * help_menu = new QMenu(tr("Help"), this);
+    help_menu->addAction(about_action);
 
-    QVector3D pos(10.0f, 6.0f, 3.0f);
-    QVector3D center(0.0f, 0.0f, 0.0f);
-    QVector3D sight_dir = (center - pos);
-    QVector3D right = QVector3D::crossProduct(sight_dir, QVector3D(0.0f, 1.0f, 0.0f));
-    QVector3D up = QVector3D::crossProduct(sight_dir, right);
-    camera->set_scene(scene);
-    camera->set_viewport(QSize(640, 480));
-    camera->set_position(pos);
-    camera->set_point_to_look(center);
-    camera->set_up(up);
-    camera->set_clip_planes(0.1f, 150.0f);
+    QToolBar * tool_bar = new QToolBar(this);
+    tool_bar->setMovable(false);
+    tool_bar->addAction(open_action);
+    tool_bar->addAction(save_action);
+    tool_bar->addAction(reset_rotation);
+    tool_bar->addSeparator();
+    tool_bar->addActions(mode_group->actions());
+    tool_bar->addSeparator();
+    tool_bar->addAction(about_action);
+
+    menuBar()->addMenu(file_menu);
+    menuBar()->addMenu(edit_menu);
+    menuBar()->addMenu(mode_menu);
+    menuBar()->addMenu(help_menu);
+    addToolBar(tool_bar);
+}
+
+void MainWindow::create_default_scene() {
+    QString initial_scene = "4 8 5 0 1 0 1\n"
+            "0.1 5 0.16 0.12\n"
+            "1 0 0\n"
+            "0 1 0\n"
+            "0 0 1\n"
+            "180 180 180\n"
+            "2 // Objects count\n"
+            " // Object N 0\n"
+            "0 0 0\n"
+            "0 -0.25 1\n"
+            "1 0 0 \n"
+            "0 1 0 \n"
+            "0 0 1 \n"
+            "4 // Control points count\n"
+            "0.3 0.3\n"
+            "0.1 0.2\n"
+            "0.4 0\n"
+            "0.1 -0.3\n"
+            " // Object N 1\n"
+            "0 0 0\n"
+            "1 0 -0.3\n"
+            "1 0 0 \n"
+            "0 1 0 \n"
+            "0 0 1 \n"
+            "7 // Control points count\n"
+            "0.0 0.27\n"
+            "0.15 0.25\n"
+            "0.25 0.15\n"
+            "0.3 0.0\n"
+            "0.25 -0.15\n"
+            "0.15 -0.25\n"
+            "0.0 -0.27";
+
+    QTextStream stream(&initial_scene, QIODevice::ReadOnly);
+    scene_info = std::shared_ptr<SceneInfo>(SceneInfo::load(stream));
+
+    properties->set_scene_info(scene_info.get());
+}
+
+void MainWindow::reset_scene_rotation() {
+    scene_info->scene->set_rotation(QMatrix4x4());
+    wireframe->update_view();
+}
+
+void MainWindow::set_wireframe_mode() {
+    spline->setVisible(false);
+    wireframe->setVisible(true);
+}
+
+void MainWindow::set_spline_mode() {
+    spline->setVisible(true);
+    wireframe->setVisible(false);
+}
+
+void MainWindow::show_about() {
+    QMessageBox::about(this, tr("About FIT_14202_Grachev_Wireframe"),
+                       tr("Wireframe Version 1.0, NSU FIT 14202 Grachev\n\n"
+                                  "* To rotate single object use left mouse button.\n"
+                                  "* To rotate whole scene use right mouse button."));
+}
+
+void MainWindow::save_scene() {
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                    "./",
+                                                    "Scene(*.txt);;All files(*.*)");
+    if (!filename.isEmpty()) {
+        QFile file(filename);
+        if (file.open(QIODevice::WriteOnly)) {
+            QTextStream stream(&file);
+            scene_info->save(stream);
+        }
+    }
+}
+
+void MainWindow::open_file() {
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "./",
+                                                    "Scene(*.txt);;All files(*.*)");
+    if (!filename.isEmpty()) {
+        QFile file(filename);
+        try {
+            if (file.open(QIODevice::ReadOnly)) {
+                QTextStream stream(&file);
+
+                std::shared_ptr<SceneInfo> info(SceneInfo::load(stream));
+                properties->set_scene_info(info.get());
+                scene_info = info;
+            }
+        } catch (const std::runtime_error & e) {
+            QMessageBox::warning(this, tr("Cannot open file"),
+                                 tr(e.what()));
+        }
+    }
 }
