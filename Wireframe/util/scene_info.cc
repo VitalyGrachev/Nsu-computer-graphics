@@ -1,5 +1,6 @@
 #include "scene_info.h"
 #include "../figure/solid_of_revolution.h"
+#include "scene_loader.h"
 
 SceneInfo::~SceneInfo() {
     clear();
@@ -23,9 +24,11 @@ void SceneInfo::clear() {
     generatrices.clear();
 }
 
-bool SceneInfo::load(QTextStream & stream) {
-    clear();
-    return false;
+SceneInfo * SceneInfo::load(QTextStream & stream) {
+    QScopedPointer<SceneInfo> scene_info(new SceneInfo);
+    SceneLoader loader(scene_info.data(), stream);
+    loader();
+    return scene_info.take();
 }
 
 bool SceneInfo::save(QTextStream & stream) {
@@ -54,7 +57,7 @@ bool SceneInfo::save(QTextStream & stream) {
     const int objects_count = objects.size();
     stream << objects_count << " // Objects count" << endl;
     for (int i = 0; i < objects_count; ++i) {
-        stream << " // Object N" << i << endl;
+        stream << " // Object N " << i << endl;
         const QRgb color = objects[i]->get_color();
         stream << qRed(color) << ' ' << qGreen(color) << ' ' << qBlue(color) << endl;
 

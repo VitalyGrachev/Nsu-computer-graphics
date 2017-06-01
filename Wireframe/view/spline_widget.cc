@@ -2,13 +2,13 @@
 
 #include <QPaintEvent>
 #include <QPainter>
-#include <iostream>
 
 namespace {
 
 class ScaleHelper {
 public:
-    ScaleHelper(const Curve::PointContainer & points, const QSize & image_size);
+    ScaleHelper(const Curve::PointContainer & spline_points, const Curve::PointContainer & control_points,
+                    const QSize & image_size);
 
     QPoint operator()(const QPointF & point) const {
         QPoint pt = (point * scale_factor).toPoint();
@@ -20,11 +20,17 @@ private:
     double scale_factor;
 };
 
-ScaleHelper::ScaleHelper(const Curve::PointContainer & points, const QSize & image_size) {
-    if (!points.empty()) {
-        double max_dx = std::abs(points[0].x());
-        double max_dy = std::abs(points[0].y());
-        for (const QPointF & point : points) {
+ScaleHelper::ScaleHelper(const Curve::PointContainer & spline_points,
+                         const Curve::PointContainer & control_points,
+                         const QSize & image_size) {
+    if (!spline_points.empty()) {
+        double max_dx = std::abs(spline_points[0].x());
+        double max_dy = std::abs(spline_points[0].y());
+        for (const QPointF & point : spline_points) {
+            max_dx = std::max(max_dx, std::abs(point.x()));
+            max_dy = std::max(max_dy, std::abs(point.y()));
+        }
+        for (const QPointF & point : control_points) {
             max_dx = std::max(max_dx, std::abs(point.x()));
             max_dy = std::max(max_dy, std::abs(point.y()));
         }
@@ -74,7 +80,7 @@ void SplineWidget::redraw_image() {
                           shown_image.width() / 2, shown_image.height(), axis_color);
     if (curve) {
         const Curve::PointContainer & curve_points = curve->get_points();
-        ScaleHelper scale_helper(curve_points, shown_image.size());
+        ScaleHelper scale_helper(curve_points, curve->get_control_points(), shown_image.size());
 
         QPoint pt = scale_helper(QPointF(1, 0));
         shown_image.draw_line(pt.x(), shown_image.height() / 2 - 2,

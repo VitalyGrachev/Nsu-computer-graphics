@@ -6,9 +6,9 @@
 
 class SceneLoader {
 public:
-    SceneLoader(QTextStream & stream);
+    SceneLoader(SceneInfo * scene_info, QTextStream & stream);
 
-    std::shared_ptr<SceneInfo> operator()();
+    bool operator()();
 
 private:
     void parse_line(const QString & line);
@@ -22,7 +22,7 @@ private:
         ControlPointsCount, ControlPoint
     };
 
-    std::shared_ptr<SceneInfo> output;
+    SceneInfo * output;
     QTextStream & stream;
     QMatrix4x4 matrix;
     QVector3D object_pos;
@@ -34,6 +34,7 @@ private:
     int n, m, k, a, b, c, d;
     Content expected_content = Content::CommonParams;
     QRegExp comment_tester;
+    QRegExp whitespace_tester;
 };
 
 #endif //SCENE_LOADER_H

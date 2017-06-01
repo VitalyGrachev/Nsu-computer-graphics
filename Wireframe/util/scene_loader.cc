@@ -3,14 +3,15 @@
 
 #include <QString>
 
-SceneLoader::SceneLoader(QTextStream & stream)
-        : stream(stream), output(new SceneInfo()), comment_tester("^\\s*//.*") {
+SceneLoader::SceneLoader(SceneInfo * scene_info, QTextStream & stream)
+        : stream(stream), output(scene_info),
+          comment_tester("^\\s*//.*"), whitespace_tester("\\s+") {
     output->scene = new Scene();
     output->camera = new Camera();
     output->camera->set_scene(output->scene);
 }
 
-std::shared_ptr<SceneInfo> SceneLoader::operator()() {
+bool SceneLoader::operator()() {
     do {
         QString line = stream.readLine();
         if (!line.isNull()) {
@@ -22,11 +23,15 @@ std::shared_ptr<SceneInfo> SceneLoader::operator()() {
         }
     } while (expected_content != Content::Nothing);
 
-    if (!stream.atEnd()) {
-        throw std::runtime_error("Found garbage at end of file.");
+    while (!stream.atEnd()) {
+        QString line = stream.readLine();
+        if (line.isNull() ||
+            !line.isEmpty() && !is_comment(line)) {
+            throw std::runtime_error("Found garbage at end of file.");
+        }
     }
 
-    return output;
+    return true;
 }
 
 bool SceneLoader::is_comment(const QString & line) {
@@ -36,7 +41,7 @@ bool SceneLoader::is_comment(const QString & line) {
 void SceneLoader::parse_line(const QString & line) {
     bool ok = false;
     const char * error_msg = "Undefined error";
-    QStringList line_parts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    QStringList line_parts = line.split(whitespace_tester, QString::SkipEmptyParts);
 
     switch (expected_content) {
         case Content::CommonParams:

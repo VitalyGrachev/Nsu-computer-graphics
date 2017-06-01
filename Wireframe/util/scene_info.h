@@ -16,7 +16,7 @@ struct SceneInfo {
 
     ~SceneInfo();
 
-    bool load(QTextStream & stream);
+    static SceneInfo * load(QTextStream & stream);
 
     bool save(QTextStream & stream);
 

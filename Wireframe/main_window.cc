@@ -103,43 +103,41 @@ void MainWindow::create_menu_and_toolbar() {
 }
 
 void MainWindow::create_default_scene() {
-    scene_info = std::make_shared<SceneInfo>();
-    scene_info->camera = new Camera();
-    scene_info->scene = new Scene();
+    QString initial_scene = "4 8 5 0 1 0 1\n"
+            "0.1 5 0.16 0.12\n"
+            "1 0 0\n"
+            "0 1 0\n"
+            "0 0 1\n"
+            "180 180 180\n"
+            "2 // Objects count\n"
+            " // Object N 0\n"
+            "0 0 0\n"
+            "0 -0.25 1\n"
+            "1 0 0 \n"
+            "0 1 0 \n"
+            "0 0 1 \n"
+            "4 // Control points count\n"
+            "0.3 0.3\n"
+            "0.1 0.2\n"
+            "0.4 0\n"
+            "0.1 -0.3\n"
+            " // Object N 1\n"
+            "0 0 0\n"
+            "1 0 -0.3\n"
+            "1 0 0 \n"
+            "0 1 0 \n"
+            "0 0 1 \n"
+            "7 // Control points count\n"
+            "0.0 0.27\n"
+            "0.15 0.25\n"
+            "0.25 0.15\n"
+            "0.3 0.0\n"
+            "0.25 -0.15\n"
+            "0.15 -0.25\n"
+            "0.0 -0.27";
 
-    scene_info->camera->set_scene(scene_info->scene);
-
-    {
-        BSpline * vase_spline = new BSpline(4, 5);
-        vase_spline->add_control_point(QPointF(0.3, 0.3));
-        vase_spline->add_control_point(QPointF(0.1, 0.2));
-        vase_spline->add_control_point(QPointF(0.4, 0.0));
-        vase_spline->add_control_point(QPointF(0.1, -0.3));
-        scene_info->generatrices.emplace_back(vase_spline);
-
-        SolidOfRevolution * vase = new SolidOfRevolution(vase_spline, 8);
-        vase->set_position(QVector3D(0, 0, 1));
-        scene_info->objects.emplace_back(vase);
-
-        scene_info->scene->add_object(vase);
-    }
-
-    {
-        BSpline * sphere_spline = new BSpline(7, 5);
-        sphere_spline->add_control_point(QPointF(0.0, 1.0));
-        sphere_spline->add_control_point(QPointF(0.707, 0.707));
-        sphere_spline->add_control_point(QPointF(1.0, 0.0));
-        sphere_spline->add_control_point(QPointF(0.707, -0.707));
-        sphere_spline->add_control_point(QPointF(0.0, -1.0));
-        scene_info->generatrices.emplace_back(sphere_spline);
-
-        SolidOfRevolution * sphere = new SolidOfRevolution(sphere_spline, 8);
-        sphere->set_position(QVector3D(1, 0, -0.3));
-        sphere->set_scale(QVector3D(0.3, 0.3, 0.3));
-        scene_info->objects.emplace_back(sphere);
-
-        scene_info->scene->add_object(sphere);
-    }
+    QTextStream stream(&initial_scene, QIODevice::ReadOnly);
+    scene_info = std::shared_ptr<SceneInfo>(SceneInfo::load(stream));
 
     properties->set_scene_info(scene_info.get());
 }
@@ -188,9 +186,8 @@ void MainWindow::open_file() {
         try {
             if (file.open(QIODevice::ReadOnly)) {
                 QTextStream stream(&file);
-                SceneLoader loader = SceneLoader(stream);
 
-                std::shared_ptr<SceneInfo> info = loader();
+                std::shared_ptr<SceneInfo> info(SceneInfo::load(stream));
                 properties->set_scene_info(info.get());
                 scene_info = info;
             }
