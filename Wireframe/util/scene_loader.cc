@@ -46,23 +46,41 @@ void SceneLoader::parse_line(const QString & line) {
     switch (expected_content) {
         case Content::CommonParams:
             if (line_parts.size() >= 7) {
-                int params[7];
-                for (int i = 0; i < 7; ++i) {
+                int params[3];
+                for (int i = 0; i < 3; ++i) {
                     params[i] = line_parts[i].toUInt(&ok);
                     if (!ok) break;
                 }
-                if (ok &&
-                    (line_parts.size() == 7 || line_parts[7].startsWith("//"))) {
-                    n = params[0];
-                    m = params[1];
-                    k = params[2];
-                    a = params[3];
-                    b = params[4];
-                    c = params[5];
-                    d = params[6];
 
-                    expected_content = Content::VisibilityPyramid;
-                    return;
+                if (ok &&
+                    params[0] < 70 &&
+                    params[1] < 70 &&
+                    params[2] < 70) {
+                    const double pi = 3.141592;
+                    double props[4];
+                    for (int i = 0; i < 4; ++i) {
+                        props[i] = line_parts[i + 3].toDouble(&ok);
+                        if (!ok) break;
+                    }
+                    if (ok &&
+                        props[0] >= 0.0 &&
+                        props[1] <= 1.0 &&
+                        props[2] >= 0.0 &&
+                        props[3] <= 2.0 * pi &&
+                        props[0] <= props[1] &&
+                        props[2] <= props[3] &&
+                        (line_parts.size() == 7 || line_parts[7].startsWith("//"))) {
+                        n = params[0];
+                        m = params[1];
+                        k = params[2];
+                        a = props[0];
+                        b = props[1];
+                        c = props[2];
+                        d = props[3];
+
+                        expected_content = Content::VisibilityPyramid;
+                        return;
+                    }
                 }
             }
             error_msg = "Error with common params.";
