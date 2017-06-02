@@ -34,7 +34,8 @@ SceneInfo * SceneInfo::load(QTextStream & stream) {
 bool SceneInfo::save(QTextStream & stream) {
     int a, b, c, d;
     a = c = 0;
-    b = d = 1;
+    b = 1;
+    d = 2.0 * 3.141592;
     int n = generatrices[0]->major_segments_count();
     int m = reinterpret_cast<SolidOfRevolution *>(objects[0])->get_sector_count();
     int k = generatrices[0]->minor_segments_count();
